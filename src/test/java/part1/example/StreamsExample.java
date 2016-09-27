@@ -4,7 +4,6 @@ import data.Employee;
 import data.JobHistoryEntry;
 import data.Person;
 import org.junit.Test;
-import part1.exercise.StreamsExercise1;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,7 +31,7 @@ public class StreamsExample {
     }
 
     /**
-     * Промежуточные операсции
+     * Промежуточные операции
      */
     @Test
     public void operations() {
@@ -42,19 +41,20 @@ public class StreamsExample {
                 .filter(e -> e.getPerson().getFirstName().equals("John"))
                 .map(Employee::getJobHistory)
                 .flatMap(Collection::stream)
-                .peek(System.out::println)
-                .distinct()
+                .peek(System.out::println) //предназначен исключительно для отладки (например, логгирование)
+                .distinct() //только уникальные элементы
                 .sorted(Comparator.comparing(JobHistoryEntry::getDuration))
                 .skip(1) // long
                 .limit(10) // long
-                .unordered()
-                .parallel()
-                .sequential()
+                .unordered() //отключение упорядочевания (может экоономить ресурсы)
+                .parallel() //включение возможности многопоточной работы
+                .sequential() //отключение многопоточной работы
                 .findAny();
-        //      .allMatch(Predicate<T>)
+        // Терминальные операции:
+        //      .allMatch(Predicate<T>) // на пустом стриме вернет true
         //      .anyMatch(Predicate<T>)
-        //      .noneMatch(Predicate<T>)
-        //      .reduce(BinaryOperator<T>) // ассоциативная операция
+        //      .noneMatch(Predicate<T>) // на пустом стриме вернет true
+        //      .reduce(BinaryOperator<T>) // ассоциативная операция - результат не меняется от порядка операндов
         //      .collect(Collector<T, A, R>)
         //      .count()
         //      .findAny()
@@ -66,14 +66,14 @@ public class StreamsExample {
         //      .toArray(IntFunction<A[]>)
         //      .iterator()
 
-        // Characteristic :
-        // CONCURRENT
-        // DISTINCT
+        // Characteristic: -изменяет гарантированно
+        // CONCURRENT - parallel, sequential
+        // DISTINCT - distinct, map, flatMap
         // IMMUTABLE
         // NONNULL
-        // ORDERED
+        // ORDERED - flatMap, sorted, unordered
         // SIZED
-        // SORTED
+        // SORTED - map, flatMap, sorted
         // SUBSIZED
 
 
