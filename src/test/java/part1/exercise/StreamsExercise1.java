@@ -24,14 +24,14 @@ public class StreamsExercise1 {
 
     private static List<Employee> employees;
 
-    private final Predicate<String> employerWorkedEpam = e -> e.equals("epam");
-    private final Function<JobHistoryEntry, String> getEmployer = JobHistoryEntry::getEmployer;
-    private final Consumer<Employee> printEmployee = e -> {
+    private static final Predicate<String> employerWorkedForEpam = e -> e.equals("epam");
+    private static final Function<JobHistoryEntry, String> getEmployer = JobHistoryEntry::getEmployer;
+    private static final Consumer<Employee> printEmployee = e -> {
         System.out.println(e.getPerson().toString());
         e.getJobHistory().stream()
                 .peek(j -> System.out.println("\t\t".concat(j.toString())))
                 .map(getEmployer)
-                .anyMatch(employerWorkedEpam);
+                .anyMatch(employerWorkedForEpam);
     };
 
     @BeforeClass
@@ -45,7 +45,7 @@ public class StreamsExercise1 {
         employees.stream()
                 .filter(e -> e.getJobHistory().stream()
                         .map(getEmployer)
-                        .anyMatch(employerWorkedEpam))
+                        .anyMatch(employerWorkedForEpam))
                 .peek(printEmployee)
                 .map(Employee::getPerson)
                 .collect(Collectors.toList());
@@ -58,7 +58,7 @@ public class StreamsExercise1 {
                 .filter(e -> e.getJobHistory().stream()
                         .map(getEmployer)
                         .limit(1)
-                        .anyMatch(employerWorkedEpam))
+                        .anyMatch(employerWorkedForEpam))
                 .peek(printEmployee)
                 .map(Employee::getPerson)
                 .collect(Collectors.toList());
@@ -79,7 +79,7 @@ public class StreamsExercise1 {
         int result = employees.stream()
                 .map(Employee::getJobHistory)
                 .flatMap(Collection::stream)
-                .filter(j -> employerWorkedEpam.test(getEmployer.apply(j)))
+                .filter(j -> employerWorkedForEpam.test(getEmployer.apply(j)))
                 .map(JobHistoryEntry::getDuration)
                 .reduce(0, Integer::sum);;
         assertEquals(expected, result);
