@@ -28,7 +28,7 @@ public class StreamsExample {
                         .distinct()
                         .collect(Collectors.toList());
 
-        assertEquals(Collections.singletonList("Galt"), johnsLastNames);
+        assertEquals(Arrays.asList("Galt", "Doe", "White"), johnsLastNames);
     }
 
     /**
