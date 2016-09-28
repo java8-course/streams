@@ -56,8 +56,7 @@ public class Generator {
     }
 
     public static Employee generateEmployee() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return new Employee(generatePerson(), generateJobHistory());
     }
 
     public static List<Employee> generateEmployeeList() {

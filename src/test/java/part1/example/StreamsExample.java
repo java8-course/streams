@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 
 public class StreamsExample {
 
-    // https://github.com/senia-psm/java-streams
+    // https://github.com/java8-course/streams
 
     @Test
     public void checkJohnsLastNames() {

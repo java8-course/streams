@@ -34,7 +34,7 @@ public class CollectorsExample {
         final Stream<Person> personStream = getPersonStream();
 
         // [a, b, c, d] -> [[a, b], [c, d]]
-        final String result = personStream.parallel()
+        final String result = personStream//.parallel()
                 // .reduce((a, b) -> ???) Optional<T> reduce(BinaryOperator<T> accumulator)
                 // .reduce(zeroPerson, (a, b) -> ???) T reduce(T identity, BinaryOperator<T> accumulator)
                 //     <U> U reduce(U identity,
