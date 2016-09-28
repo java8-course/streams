@@ -9,10 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
-import static data.Generator.generateEmployeeList;
-import static java.util.stream.Collectors.*;
 import static org.junit.Assert.assertEquals;
 
 public class StreamsExercise2 {
@@ -38,7 +35,7 @@ public class StreamsExercise2 {
 
     @Test
     public void greatestExperiencePerEmployer() {
-        Map<String, Person> employeesIndex = null;// TODO
+        Map<String, Person> employeesIndex = null;// TODO - дольше всего суммарно проработал на работодателя
 
         assertEquals(new Person("John", "White", 28), employeesIndex.get("epam"));
     }

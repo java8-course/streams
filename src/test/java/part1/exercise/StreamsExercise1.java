@@ -36,6 +36,8 @@ public class StreamsExercise1 {
                                 .anyMatch(jobHistoryEntry -> jobHistoryEntry.getEmployer().equals("epam")))
                         .map(Employee::getPerson)
                         .collect(Collectors.toList());
+
+      // TODO: test
     }
 
     @Test
@@ -46,6 +48,9 @@ public class StreamsExercise1 {
                                 employee.getJobHistory().get(0).getEmployer().equals("epam")))
                         .map(Employee::getPerson)
                         .collect(Collectors.toList());
+
+        // TODO: test
+
     }
 
     @Test
