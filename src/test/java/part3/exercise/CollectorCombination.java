@@ -1,8 +1,8 @@
 package part3.exercise;
 
-import part2.exercise.CollectorsExercise;
-import part2.exercise.CollectorsExercise.Key;
-import part2.exercise.CollectorsExercise.Value;
+import part2.exercise.CollectorsExercise2;
+import part2.exercise.CollectorsExercise2.Key;
+import part2.exercise.CollectorsExercise2.Value;
 import org.junit.Test;
 
 import java.util.List;
@@ -40,19 +40,19 @@ public class CollectorCombination {
 
     @Test
     public void collectKeyValueMap() {
-        // TODO see CollectorsExercise::collectKeyValueMap
+        // TODO see CollectorsExercise1::collectKeyValueMap
         // В 1 проход в 2 Map с использованием MapPair и mapMerger
         // final MapPair res2 = pairs.stream()
         //        .collect(new Collector<Pair, MapPair, MapPair>() {
 
         // Перепишите решение в слещующем виде:
-        final List<CollectorsExercise.Pair> pairs = CollectorsExercise.generatePairs(10, 100);
+        final List<CollectorsExercise2.Pair> pairs = CollectorsExercise2.generatePairs(10, 100);
 
         final Pair<Map<String, Key>, Map<String, List<Value>>> res2 = pairs.stream()
                 .collect(
                         paired(
-                                mapping(CollectorsExercise.Pair::getKey, toMap(Key::getId, Function.identity(), (x, y) -> x)),
-                                mapping(CollectorsExercise.Pair::getValue, groupingBy(Value::getKeyId, toList()))
+                                mapping(CollectorsExercise2.Pair::getKey, toMap(Key::getId, Function.identity(), (x, y) -> x)),
+                                mapping(CollectorsExercise2.Pair::getValue, groupingBy(Value::getKeyId, toList()))
                         )
                 );
 
