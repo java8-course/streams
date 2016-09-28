@@ -80,8 +80,8 @@ public class StreamsExercise1 {
                 .map(Employee::getJobHistory)
                 .flatMap(Collection::stream)
                 .filter(j -> employerWorkedForEpam.test(getEmployer.apply(j)))
-                .map(JobHistoryEntry::getDuration)
-                .reduce(0, Integer::sum);;
+                .mapToInt(JobHistoryEntry::getDuration)
+                .sum();
         assertEquals(expected, result);
     }
 
