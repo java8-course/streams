@@ -1,8 +1,8 @@
 package part3.exercise;
 
-import part2.exercise.CollectorsExercise1;
-import part2.exercise.CollectorsExercise1.Key;
-import part2.exercise.CollectorsExercise1.Value;
+import part2.exercise.CollectorsExercise2;
+import part2.exercise.CollectorsExercise2.Key;
+import part2.exercise.CollectorsExercise2.Value;
 import org.junit.Test;
 
 import java.util.List;
@@ -46,13 +46,13 @@ public class CollectorCombination {
         //        .collect(new Collector<Pair, MapPair, MapPair>() {
 
         // Перепишите решение в слещующем виде:
-        final List<CollectorsExercise1.Pair> pairs = CollectorsExercise1.generatePairs(10, 100);
+        final List<CollectorsExercise2.Pair> pairs = CollectorsExercise2.generatePairs(10, 100);
 
         final Pair<Map<String, Key>, Map<String, List<Value>>> res2 = pairs.stream()
                 .collect(
                         paired(
-                                mapping(CollectorsExercise1.Pair::getKey, toMap(Key::getId, Function.identity(), (x, y) -> x)),
-                                mapping(CollectorsExercise1.Pair::getValue, groupingBy(Value::getKeyId, toList()))
+                                mapping(CollectorsExercise2.Pair::getKey, toMap(Key::getId, Function.identity(), (x, y) -> x)),
+                                mapping(CollectorsExercise2.Pair::getValue, groupingBy(Value::getKeyId, toList()))
                         )
                 );
 
