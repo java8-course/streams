@@ -42,11 +42,11 @@ public class StreamsExercise1 {
                         .collect(Collectors.toList());
 
         List<Person> expected = new ArrayList<>();
-        for (Employee e :employees) {
-            for (JobHistoryEntry jhe: e.getJobHistory())
+        for (Employee e : employees) {
+            for (JobHistoryEntry jhe : e.getJobHistory())
                 if (jhe.getEmployer().equals("epam")) {
                     final Person candidate = e.getPerson();
-                    if (! expected.contains(candidate)) expected.add(candidate);
+                    if (!expected.contains(candidate)) expected.add(candidate);
                 }
         }
 
@@ -57,13 +57,16 @@ public class StreamsExercise1 {
     public void getEmployeesStartedFromEpam() {
         List<Person> epamEmployees =
                 employees.stream()
-                        .filter((employee ->
-                                employee.getJobHistory().get(0).getEmployer().equals("epam")))
+                        .filter(employee ->
+                                employee.getJobHistory().stream()
+                                        .findFirst()
+                                        .map(jhe -> "epam".equals(jhe.getEmployer()))
+                                        .orElse(false))
                         .map(Employee::getPerson)
                         .collect(Collectors.toList());
 
         List<Person> expected = new ArrayList<>();
-        for (Employee e :employees)
+        for (Employee e : employees)
             if (e.getJobHistory().get(0).getEmployer().equals("epam"))
                 expected.add(e.getPerson());
 
@@ -88,7 +91,7 @@ public class StreamsExercise1 {
                 .flatMap(employee -> employee.getJobHistory().stream())
                 .filter(jhe -> jhe.getEmployer().equals("epam"))
                 .mapToInt(JobHistoryEntry::getDuration)
-                .reduce(0, (left, right) -> left + right);
+                .sum();     //.reduce(0, (left, right) -> left + right);
         assertEquals(expected, result);
     }
 
