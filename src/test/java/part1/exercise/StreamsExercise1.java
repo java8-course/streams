@@ -54,8 +54,9 @@ public class StreamsExercise1 {
             if (e.getJobHistory().get(0).getEmployer().equals("epam")) expected.add(e.getPerson());
         }
 
-        List<Employee> result = employees.stream()
+        List<Person> result = employees.stream()
                 .filter(e -> e.getJobHistory().get(0).getEmployer().equals("epam"))
+                .map(e -> e.getPerson())
                 .collect(toList());
 
         Assert.assertEquals(expected, result);
