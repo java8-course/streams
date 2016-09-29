@@ -3,14 +3,16 @@ package part1.exercise;
 import data.Employee;
 import data.JobHistoryEntry;
 import data.Person;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import static java.util.stream.Collectors.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class StreamsExercise2 {
     // https://youtu.be/kxgo7Y4cdA8 Сергей Куксенко и Алексей Шипилёв — Через тернии к лямбдам, часть 1
@@ -19,16 +21,42 @@ public class StreamsExercise2 {
     // https://youtu.be/O8oN4KSZEXE Сергей Куксенко — Stream API, часть 1
     // https://youtu.be/i0Jr2l3jrDA Сергей Куксенко — Stream API, часть 2
 
-    // TODO class PersonEmployerPair
+    @AllArgsConstructor
+    @Data
+    private class PersonEmployerPair {
+        Person person;
+        String employer;
+    }
 
     @Test
     public void employersStuffLists() {
-        Map<String, List<Person>> employersStuffLists = null;// TODO
-        throw new UnsupportedOperationException();
+        Map<String, List<Person>> expected = new HashMap<>();
+        for (Employee e : getEmployees()) {
+            final Person p = e.getPerson();
+            for (JobHistoryEntry jobHistoryEntry : e.getJobHistory()) {
+                final String employer = jobHistoryEntry.getEmployer();
+                List<Person> eStaff = expected.get(employer);
+                if (eStaff == null) {
+                    eStaff = new ArrayList<>();
+                    expected.put(employer, eStaff);
+                }
+                if (!eStaff.contains(p)) eStaff.add(p);
+            }
+        }
+
+        final Map<String, List<Person>> employersStuffLists = getEmployees().stream()
+                .flatMap(e -> e.getJobHistory().stream().map(JobHistoryEntry::getEmployer).map(emp -> new PersonEmployerPair(e.getPerson(), emp)))
+                .distinct()
+                .collect(groupingBy(PersonEmployerPair::getEmployer, mapping(PersonEmployerPair::getPerson, toList())));
+
+        assertThat(employersStuffLists.entrySet(), containsInAnyOrder(expected.entrySet().toArray()));
     }
 
     @Test
     public void indexByFirstEmployer() {
+        Map<String, List<Person>> expected = new HashMap<>();
+
+
         Map<String, List<Person>> employeesIndex = null;// TODO
         throw new UnsupportedOperationException();
     }
