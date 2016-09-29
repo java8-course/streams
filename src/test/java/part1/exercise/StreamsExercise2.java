@@ -5,7 +5,6 @@ import data.JobHistoryEntry;
 import data.Person;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -26,7 +25,7 @@ public class StreamsExercise2 {
     // https://youtu.be/O8oN4KSZEXE Сергей Куксенко — Stream API, часть 1
     // https://youtu.be/i0Jr2l3jrDA Сергей Куксенко — Stream API, часть 2
 
-    private static List<Employee> employees;
+    private static List<Employee> employees = getEmployees();
 
     private static class PersonEmployerPair {
         private final Person person;
@@ -120,7 +119,8 @@ public class StreamsExercise2 {
                 new Employee(
                         new Person("John", "Galt", 26),
                         Arrays.asList(
-                                new JobHistoryEntry(3, "dev", "epam"),
+                                new JobHistoryEntry(400, "dev", "epam"),
+                                new JobHistoryEntry(400, "dev", "epam"),
                                 new JobHistoryEntry(1, "dev", "google")
                         )),
                 new Employee(
@@ -169,25 +169,6 @@ public class StreamsExercise2 {
                 .map(e -> new StreamsExercise2.PersonEmployerPair(employee.getPerson(), e));
     }
 
-    private Map<String, Person> getGreatestExperiencePerEmployer(List<Employee> employees) {
-        final Stream<StreamsExercise2.PersonEmployerDuration> personEmployerDurationStream = employees.stream()
-                .flatMap(
-                        e -> e.getJobHistory()
-                                .stream()
-                                .map(j -> new StreamsExercise2.PersonEmployerDuration(e.getPerson(), j.getEmployer(), j.getDuration())));
-
-        return personEmployerDurationStream
-                .collect(groupingBy(
-                        StreamsExercise2.PersonEmployerDuration::getEmployer,
-                        collectingAndThen(
-                                maxBy(comparing(StreamsExercise2.PersonEmployerDuration::getDuration)), p -> p.get().getPerson())));
-    }
-
-    @BeforeClass
-    public static void generateEmployeeList() {
-        employees = getEmployees();
-    }
-
     @Test
     public void employersStuffLists() {
         System.out.println("Employers list stuff:");
@@ -222,12 +203,27 @@ public class StreamsExercise2 {
         ;
     }
 
+    private Map<String, Person> getGreatestExperiencePerEmployer(List<Employee> employees) {
+
+        final Stream<StreamsExercise2.PersonEmployerDuration> personEmployerDurationStream = employees.stream()
+                .flatMap(
+                        e -> e.getJobHistory().stream()
+                                .collect(groupingBy(JobHistoryEntry::getEmployer, summingInt(JobHistoryEntry::getDuration)))
+                                .entrySet().stream()
+                                .map(es -> new StreamsExercise2.PersonEmployerDuration(e.getPerson(), es.getKey(), es.getValue())));
+
+        return personEmployerDurationStream
+                .collect(groupingBy(
+                        StreamsExercise2.PersonEmployerDuration::getEmployer,
+                        collectingAndThen(
+                                maxBy(comparing(StreamsExercise2.PersonEmployerDuration::getDuration)), p -> p.get().getPerson())));
+    }
+
     @Test
     public void greatestExperiencePerEmployer() {
         Map<String, Person> employeesIndex = getGreatestExperiencePerEmployer(getEmployees());
 
-        assertEquals(new Person("John", "White", 28), employeesIndex.get("epam"));
+        assertEquals(new Person("John", "Galt", 26), employeesIndex.get("epam"));
     }
-
 
 }

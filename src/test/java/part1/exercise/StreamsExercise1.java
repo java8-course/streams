@@ -3,7 +3,6 @@ package part1.exercise;
 import data.Employee;
 import data.Generator;
 import data.JobHistoryEntry;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Collection;
@@ -22,9 +21,9 @@ public class StreamsExercise1 {
     // https://youtu.be/O8oN4KSZEXE Сергей Куксенко — Stream API, часть 1
     // https://youtu.be/i0Jr2l3jrDA Сергей Куксенко — Stream API, часть 2
 
-    private static List<Employee> employees;
+    private static List<Employee> employees = Generator.generateEmployeeList();
 
-    private static final Predicate<String> employerWorkedForEpam = e -> e.equals("epam");
+    private static final Predicate<String> employerWorkedForEpam = "epam"::equals;
     private static final Function<JobHistoryEntry, String> getEmployer = JobHistoryEntry::getEmployer;
     private static final Consumer<Employee> printEmployee = e -> {
         System.out.println(e.getPerson().toString());
@@ -33,11 +32,6 @@ public class StreamsExercise1 {
                 .map(getEmployer)
                 .anyMatch(employerWorkedForEpam);
     };
-
-    @BeforeClass
-    public static void generateEmployeeList() {
-        employees = Generator.generateEmployeeList();
-    }
 
     @Test
     public void getAllEpamEmployees() {
