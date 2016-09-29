@@ -6,25 +6,25 @@ import data.Person;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 public class CollectorsExercise1 {
 
     @Test
     public void getTheCoolestOne() {
-        final Map<String, Person> coolestByPosition = getCoolestByPosition(getEmployees());
+        Map<String, Person> coolestByPosition = getCoolestByPosition(getEmployees());
 
         coolestByPosition.forEach((position, person) -> System.out.println(position + " -> " + person));
+
+        final Person coolestDev = new Person("John", "Doe", 30);
+        assertThat(coolestByPosition.get("dev"), is(coolestDev));
+ //       coolestByPosition = getCoolestByPositionWithCustomCollector(getEmployees());
+        assertThat(coolestByPosition.get("dev"), is(coolestDev));
     }
 
     private static class PersonPositionDuration {
@@ -53,31 +53,69 @@ public class CollectorsExercise1 {
 
     // With the longest duration on single job
     private Map<String, Person> getCoolestByPosition(List<Employee> employees) {
-        // First option
-        // Collectors.maxBy
-        // Collectors.collectingAndThen
-        // Collectors.groupingBy
 
-        // Second option
-        // Collectors.toMap
-        // iterate twice: stream...collect(...).stream()...
-        // TODO
-        throw new UnsupportedOperationException();
+        //noinspection OptionalGetWithoutIsPresent
+        final Map<String, Person> coolestByPosition1 = employees.stream()
+                .flatMap(e -> e.getJobHistory().stream()
+                        .map(jhe -> new PersonPositionDuration(e.getPerson(), jhe.getPosition(), jhe.getDuration())))
+                .collect(groupingBy(PersonPositionDuration::getPosition,
+                        collectingAndThen(
+                                maxBy(Comparator.comparing(PersonPositionDuration::getDuration)),
+                                ppd -> ppd.get().getPerson())));
+
+        final Map<String, Person> coolestByPosition2 = employees.stream()
+                .flatMap(e -> e.getJobHistory().stream()
+                        .map(jhe -> new PersonPositionDuration(e.getPerson(), jhe.getPosition(), jhe.getDuration())))
+                .collect(toMap(PersonPositionDuration::getPosition,
+                        Function.identity(),
+                        BinaryOperator.maxBy(Comparator.comparing(PersonPositionDuration::getDuration))))
+                .entrySet().stream().collect(toMap(Map.Entry::getKey,
+                        entry -> entry.getValue().getPerson()));
+
+        return coolestByPosition2;
     }
+
+    private Map<String, Person> getCoolestByPositionWithCustomCollector(List<Employee> employees) {
+        throw new UnsupportedOperationException(); // TODO: написать свой коллектор
+        // With the longest duration on single job
+    }
+
 
     @Test
     public void getTheCoolestOne2() {
-        final Map<String, Person> coolestByPosition = getCoolestByPosition2(getEmployees());
+        Map<String, Person> coolestByPosition = getCoolestByPosition2(getEmployees());
 
         coolestByPosition.forEach((position, person) -> System.out.println(position + " -> " + person));
+
+        final Person coolestDev = new Person("John", "Galt", 23);
+        assertThat(coolestByPosition.get("dev"), is(coolestDev));
+//        coolestByPosition = getCoolestByPosition2WithCustomCollector(getEmployees());
+        assertThat(coolestByPosition.get("dev"), is(coolestDev));
     }
+
 
     // With the longest sum duration on this position
     // { John Doe, [{dev, google, 4}, {dev, epam, 4}] } предпочтительнее, чем { A B, [{dev, google, 6}, {QA, epam, 100}]}
     private Map<String, Person> getCoolestByPosition2(List<Employee> employees) {
-        // TODO
-        throw new UnsupportedOperationException();
+        //noinspection OptionalGetWithoutIsPresent
+        return employees.stream()
+                .flatMap(e -> e.getJobHistory().stream()
+                        .collect(groupingBy(JobHistoryEntry::getPosition,
+                                summingInt(JobHistoryEntry::getDuration)))
+                        .entrySet().stream()
+                        .map(posDurEntry -> new PersonPositionDuration(e.getPerson(), posDurEntry.getKey(), posDurEntry.getValue())))
+                .collect(groupingBy(PersonPositionDuration::getPosition,
+                        collectingAndThen(
+                                maxBy(Comparator.comparing(PersonPositionDuration::getDuration)),
+                                ppd -> ppd.get().getPerson())));
     }
+
+    private Map<String, Person> getCoolestByPosition2WithCustomCollector(List<Employee> employees) {
+        throw new UnsupportedOperationException(); // TODO: написать свой коллектор
+        // With the longest sum duration on this position
+
+    }
+
 
     private List<Employee> getEmployees() {
         return Arrays.asList(
@@ -103,7 +141,7 @@ public class CollectorsExercise1 {
                         new Person("John", "Galt", 23),
                         Arrays.asList(
                                 new JobHistoryEntry(3, "dev", "epam"),
-                                new JobHistoryEntry(2, "dev", "google")
+                                new JobHistoryEntry(3, "dev", "google")
                         )),
                 new Employee(
                         new Person("John", "Doe", 24),
