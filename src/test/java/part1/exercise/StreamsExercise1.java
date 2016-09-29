@@ -39,8 +39,8 @@ public class StreamsExercise1 {
     public void getEmployeesStartedFromEpam() {
         List<Person> epamEmployees = Generator.generateEmployeeList().stream()
                 .filter(e -> e.getJobHistory().stream().findFirst()
-                        .map(entry -> entry.getEmployer().equals("epam"))
-                        .orElse(false))
+                        .filter(entry -> entry.getEmployer().equals("epam"))
+                        .isPresent())
                 .map(Employee::getPerson)
                 .collect(Collectors.toList());
     }

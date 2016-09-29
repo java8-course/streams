@@ -63,10 +63,9 @@ public class StreamsExercise2 {
     @Test
     public void indexByFirstEmployer() {
         Map<String, List<Person>> employeesIndex = getEmployees().stream()
-                .map(e -> e.getJobHistory().stream().findFirst()
-                        .map(entry -> new PersonEmployerPair(entry.getEmployer(), e.getPerson())))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .flatMap(e -> e.getJobHistory().stream().findFirst()
+                        .map(entry -> new PersonEmployerPair(entry.getEmployer(), e.getPerson()))
+                .map(Stream::of).orElseGet(Stream::empty))
                 .collect(Collectors.groupingBy(
                         PersonEmployerPair::getEmployer,
                         mapping(PersonEmployerPair::getPerson, toList())
@@ -75,11 +74,8 @@ public class StreamsExercise2 {
 
     @Test
     public void greatestExperiencePerEmployer() {
-        Map<String, Person> employeesIndex = getEmployees().stream()
-                .flatMap(employee -> employee.getJobHistory().stream()
-                .collect(groupingBy(JobHistoryEntry::getEmployer, summingInt(JobHistoryEntry::getDuration)))
-                        .entrySet().stream()
-                        .map(entry -> new PersonEmployerDuration(entry.getValue(), entry.getKey(), employee.getPerson())))
+        Stream<PersonEmployerDuration> personEmployerDurationStream = getPersonEmployerDuration(getEmployees().stream());
+        Map<String, Person> employeesIndex = personEmployerDurationStream
                 .collect(groupingBy(
                         PersonEmployerDuration::getEmployer,
                         collectingAndThen(
@@ -88,6 +84,13 @@ public class StreamsExercise2 {
                 ));
 
         assertEquals(new Person("John", "White", 28), employeesIndex.get("epam"));
+    }
+
+    private static Stream<PersonEmployerDuration> getPersonEmployerDuration(Stream<Employee> employeeStream) {
+        return employeeStream.flatMap(employee -> employee.getJobHistory().stream()
+                .collect(groupingBy(JobHistoryEntry::getEmployer, summingInt(JobHistoryEntry::getDuration)))
+                .entrySet().stream()
+                .map(entry -> new PersonEmployerDuration(entry.getValue(), entry.getKey(), employee.getPerson())));
     }
 
     private static class PersonEmployerDuration {
