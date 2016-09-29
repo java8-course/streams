@@ -74,10 +74,9 @@ public class StreamsExercise2 {
         }
 
         final Map<String, List<Person>> employeesIndex = getEmployees().stream()
-                .map(e -> e.getJobHistory().stream().findFirst()
+                .flatMap(e -> e.getJobHistory().stream()
+                        .limit(1)
                         .map(jhe -> new PersonEmployerPair(e.getPerson(), jhe.getEmployer())))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
                 .collect(groupingBy(PersonEmployerPair::getEmployer, mapping(PersonEmployerPair::getPerson, toList())));
 
         assertThat(employeesIndex.entrySet(), containsInAnyOrder(expected.entrySet().toArray()));

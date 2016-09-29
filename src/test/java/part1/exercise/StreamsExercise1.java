@@ -60,8 +60,8 @@ public class StreamsExercise1 {
                         .filter(employee ->
                                 employee.getJobHistory().stream()
                                         .findFirst()
-                                        .map(jhe -> "epam".equals(jhe.getEmployer()))
-                                        .orElse(false))
+                                        .filter(jhe -> "epam".equals(jhe.getEmployer()))
+                                        .isPresent())
                         .map(Employee::getPerson)
                         .collect(Collectors.toList());
 
