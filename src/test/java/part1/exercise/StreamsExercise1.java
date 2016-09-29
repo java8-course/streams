@@ -45,8 +45,8 @@ public class StreamsExercise1 {
                 .stream()
                 .filter(employee -> employee.getJobHistory().stream()
                         .findFirst()
-                        .map(entry -> entry.getEmployer().equals("epam"))
-                        .orElse(false))
+                        .filter(entry -> entry.getEmployer().equals("epam"))
+                        .isPresent())
                 .map(Employee::getPerson)
                 .collect(Collectors.toList());
         System.out.println(epamEmployees);

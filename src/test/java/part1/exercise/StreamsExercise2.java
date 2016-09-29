@@ -7,6 +7,8 @@ import org.junit.Test;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 import static java.util.stream.Collectors.*;
@@ -74,10 +76,9 @@ public class StreamsExercise2 {
     @Test
     public void indexByFirstEmployer() {
         Map<String, List<Person>> employeesIndex = getEmployees().stream()
-                .map(e -> e.getJobHistory().stream().findFirst()
-                        .map(entry -> new PersonEmployerPair(e.getPerson(), entry.getEmployer())))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .flatMap(e -> e.getJobHistory().stream().findFirst()
+                .map(entry -> new PersonEmployerPair(e.getPerson(), entry.getEmployer()))
+                .map(Stream::of).orElseGet(Stream::empty))
                 .collect(groupingBy(PersonEmployerPair::getEmployer,
                         mapping(PersonEmployerPair::getPerson, toList())));
 
