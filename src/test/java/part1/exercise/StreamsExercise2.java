@@ -74,7 +74,10 @@ public class StreamsExercise2 {
     @Test
     public void indexByFirstEmployer() {
         Map<String, List<Person>> employeesIndex = getEmployees().stream()
-                .map(e -> new PersonEmployerPair(e.getPerson(), e.getJobHistory().get(0).getEmployer()))
+                .map(e -> e.getJobHistory().stream().findFirst()
+                        .map(entry -> new PersonEmployerPair(e.getPerson(), entry.getEmployer())))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .collect(groupingBy(PersonEmployerPair::getEmployer,
                         mapping(PersonEmployerPair::getPerson, toList())));
 
