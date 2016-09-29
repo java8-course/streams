@@ -4,17 +4,27 @@ import data.Employee;
 import data.JobHistoryEntry;
 import data.Person;
 import org.junit.Test;
-import part1.exercise.StreamsExercise1;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 import static org.junit.Assert.assertEquals;
 
 public class StreamsExample {
 
     // https://github.com/java8-course/streams
+
+    private static Stream<PersonPositionPair> employeeToPairs(Employee employee) {
+        return employee.getJobHistory().stream()
+                .map(JobHistoryEntry::getPosition)
+                .map(p -> new PersonPositionPair(employee.getPerson(), p));
+    }
+
+    // StreamsExercise1
 
     @Test
     public void checkJohnsLastNames() {
@@ -26,7 +36,7 @@ public class StreamsExample {
                         .filter(e -> e.getFirstName().equals("John"))
                         .map(Person::getLastName)
                         .distinct()
-                        .collect(Collectors.toList());
+                        .collect(toList());
 
         assertEquals(Collections.singletonList("Galt"), johnsLastNames);
     }
@@ -44,7 +54,7 @@ public class StreamsExample {
                 .flatMap(Collection::stream)
                 .peek(System.out::println)
                 .distinct()
-                .sorted(Comparator.comparing(JobHistoryEntry::getDuration))
+                .sorted(comparing(JobHistoryEntry::getDuration))
                 .skip(1) // long
                 .limit(10) // long
                 .unordered()
@@ -92,11 +102,9 @@ public class StreamsExample {
                 .flatMap(e -> e.getJobHistory().stream())
                 .filter(e -> e.getPosition().equals("dev"))
                 .distinct()
-                .sorted(Comparator.comparing(JobHistoryEntry::getDuration))
+                .sorted(comparing(JobHistoryEntry::getDuration))
                 .forEachOrdered(System.out::println);
     }
-
-    // StreamsExercise1
 
     @Test
     public void getProfessionals() {
@@ -113,13 +121,73 @@ public class StreamsExample {
         positionIndex.get("BA").forEach(System.out::println);
     }
 
-    private static class PersonPositionPair {
+    // [ (John, [dev, QA]), (Bob, [QA, QA])] -> [dev -> [John], QA -> [John, Bob]]
+    // [ (John, dev), (John, QA), (Bob, QA), (Bob, QA)]
+    private Map<String, Set<Person>> getPositionIndex(List<Employee> employees) {
+        final Stream<PersonPositionPair> personPositionPairStream = employees.stream()
+                .flatMap(StreamsExample::employeeToPairs);
+
+        //personPositionPairStream
+        //        .reduce(Collections.EMPTY_MAP, StreamsExample::addToMap, StreamsExample::combineMaps);
+
+//        return personPositionPairStream
+//                .collect(
+//                        () -> new HashMap<>(),
+//                        (m, p) -> {
+//                            final Set<Person> set = m.computeIfAbsent(p.getPosition(), (k) -> new HashSet<>());
+//                            set.add(p.getPerson());
+//                        },
+//                        (m1, m2) -> {
+//                            for (Map.Entry<String, Set<Person>> entry : m2.entrySet()) {
+//                                Set<Person> set = m1.computeIfAbsent(entry.getKey(), (k) -> new HashSet<>());
+//                                set.addAll(entry.getValue());
+//                            }
+//                        });
+        return personPositionPairStream
+                .collect(Collectors.groupingBy(
+                        PersonPositionPair::getPosition,
+                        mapping(PersonPositionPair::getPerson, toSet())));
+
+    }
+
+/*    private static Map<String, Set<Person>> combineMaps(Map<String, Set<Person>> u1,
+                                                        Map<String, Set<Person>> u2) {
+        final HashMap<String, Set<Person>> result = new HashMap<>();
+        result.putAll(u1);
+        for (Map.Entry<String, Set<Person>> entry : u2.entrySet()) {
+            Set<Person> set = result.computeIfAbsent(entry.getKey(), (k) -> new HashSet<>());
+            set.addAll(entry.getValue());
+        }
+        return result;
+    }
+
+    private static Map<String, Set<Person>> addToMap(
+            Map<String, Set<Person>> u,
+            PersonPositionPair personPositionPair) {
+        final HashMap<String, Set<Person>> result = new HashMap<>();
+        result.putAll(u);
+        Set<Person> set = result.computeIfAbsent(personPositionPair.getPosition(), (k) -> new HashSet<>());
+        set.add(personPositionPair.getPerson());
+        return result;
+    }*/
+
+
+    @Test
+    public void getTheCoolestOne() {
+        final Map<String, Person> coolestByPosition = getCoolestByPosition(getEmployees());
+
+        coolestByPosition.forEach((position, person) -> System.out.println(position + " -> " + person));
+    }
+
+    private static class PersonPositionDuration {
         private final Person person;
         private final String position;
+        private final int duration;
 
-        public PersonPositionPair(Person person, String position) {
+        public PersonPositionDuration(Person person, String position, int duration) {
             this.person = person;
             this.position = position;
+            this.duration = duration;
         }
 
         public Person getPerson() {
@@ -129,29 +197,28 @@ public class StreamsExample {
         public String getPosition() {
             return position;
         }
-    }
 
-    private Map<String, Set<Person>> getPositionIndex(List<Employee> employees) {
-        return employees.stream()
-                .flatMap(e ->
-                        e.getJobHistory().stream()
-                                .map(j -> new PersonPositionPair(e.getPerson(), j.getPosition()))
-                )
-                .collect(groupingBy(PersonPositionPair::getPosition,
-                        mapping(PersonPositionPair::getPerson, toSet())));
-        //groupingBy, mapping
-    }
-
-    @Test
-    public void getTheCoolestOne() {
-        final Map<String, Person> coolestByPosition = getCoolestByPosition(getEmployees());
-
-        coolestByPosition.forEach((position, person) -> System.out.println(position + " -> " + person));
+        public int getDuration() {
+            return duration;
+        }
     }
 
     private Map<String, Person> getCoolestByPosition(List<Employee> employees) {
-        // TODO
-        throw new UnsupportedOperationException();
+        final Stream<PersonPositionDuration> personPositionDurationStream = employees.stream()
+                .flatMap(
+                        e -> e.getJobHistory()
+                                .stream()
+                                .map(j -> new PersonPositionDuration(e.getPerson(), j.getPosition(), j.getDuration())));
+//        final Map<String, PersonPositionDuration> collect = personPositionDurationStream
+//                .collect(toMap(
+//                        PersonPositionDuration::getPosition,
+//                        Function.identity(),
+//                        (p1, p2) -> p1.getDuration() > p2.getDuration() ? p1 : p2));
+        return personPositionDurationStream
+                .collect(groupingBy(
+                        PersonPositionDuration::getPosition,
+                        collectingAndThen(
+                                maxBy(comparing(PersonPositionDuration::getDuration)), p -> p.get().getPerson())));
     }
 
     @Test
@@ -179,7 +246,6 @@ public class StreamsExample {
         System.out.println("sum: " + sumDuration);
     }
 
-
     @Test
     public void intStream_bad3() {
         int sumDuration =
@@ -206,6 +272,7 @@ public class StreamsExample {
     @Test
     public void intStream_array() {
         final Employee[] employeesArray = getEmployees().toArray(new Employee[0]);
+        //final Employee[] employeesArray = getEmployees().stream().toArray(Employee[]::new);
         final int sumDuration =
                 Arrays.stream(employeesArray)
                         .flatMap(employee -> employee.getJobHistory().stream())
@@ -214,7 +281,6 @@ public class StreamsExample {
 
         System.out.println("sum: " + sumDuration);
     }
-
 
     private List<Employee> getEmployees() {
         return Arrays.asList(
@@ -291,6 +357,24 @@ public class StreamsExample {
                                 new JobHistoryEntry(6, "QA", "epam")
                         ))
         );
+    }
+
+    private static class PersonPositionPair {
+        private final Person person;
+        private final String position;
+
+        public PersonPositionPair(Person person, String position) {
+            this.person = person;
+            this.position = position;
+        }
+
+        public Person getPerson() {
+            return person;
+        }
+
+        public String getPosition() {
+            return position;
+        }
     }
 
 }

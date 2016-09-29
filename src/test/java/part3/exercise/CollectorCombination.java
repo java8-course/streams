@@ -1,9 +1,9 @@
 package part3.exercise;
 
-import org.junit.Test;
 import part2.exercise.CollectorsExercise2;
 import part2.exercise.CollectorsExercise2.Key;
 import part2.exercise.CollectorsExercise2.Value;
+import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
