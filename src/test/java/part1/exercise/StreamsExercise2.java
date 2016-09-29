@@ -156,17 +156,17 @@ public class StreamsExercise2 {
         );
     }
 
-    private static Stream<StreamsExercise2.PersonEmployerPair> employeeToPairs(Employee employee) {
+    private static Stream<PersonEmployerPair> employeeToPairs(Employee employee) {
         return employee.getJobHistory().stream()
                 .map(JobHistoryEntry::getEmployer)
-                .map(e -> new StreamsExercise2.PersonEmployerPair(employee.getPerson(), e));
+                .map(e -> new PersonEmployerPair(employee.getPerson(), e));
     }
 
-    private static Stream<StreamsExercise2.PersonEmployerPair> firstEmployeeToPairs(Employee employee) {
+    private static Stream<PersonEmployerPair> firstEmployeeToPairs(Employee employee) {
         return employee.getJobHistory().stream()
                 .map(JobHistoryEntry::getEmployer)
                 .limit(1)
-                .map(e -> new StreamsExercise2.PersonEmployerPair(employee.getPerson(), e));
+                .map(e -> new PersonEmployerPair(employee.getPerson(), e));
     }
 
     @Test
@@ -175,8 +175,8 @@ public class StreamsExercise2 {
         Map<String, List<Person>> employersStuffLists = employees.stream()
                 .flatMap(StreamsExercise2::employeeToPairs)
                 .collect(Collectors.groupingBy(
-                        StreamsExercise2.PersonEmployerPair::getEmployer,
-                        mapping(StreamsExercise2.PersonEmployerPair::getPerson, toList())));
+                        PersonEmployerPair::getEmployer,
+                        mapping(PersonEmployerPair::getPerson, toList())));
 
         employersStuffLists.keySet()
                 .forEach(k -> {
@@ -192,8 +192,8 @@ public class StreamsExercise2 {
         Map<String, List<Person>> employersStuffLists = employees.stream()
                 .flatMap(StreamsExercise2::firstEmployeeToPairs)
                 .collect(Collectors.groupingBy(
-                        StreamsExercise2.PersonEmployerPair::getEmployer,
-                        mapping(StreamsExercise2.PersonEmployerPair::getPerson, toList())));
+                        PersonEmployerPair::getEmployer,
+                        mapping(PersonEmployerPair::getPerson, toList())));
 
         employersStuffLists.keySet()
                 .forEach(k -> {
@@ -205,18 +205,18 @@ public class StreamsExercise2 {
 
     private Map<String, Person> getGreatestExperiencePerEmployer(List<Employee> employees) {
 
-        final Stream<StreamsExercise2.PersonEmployerDuration> personEmployerDurationStream = employees.stream()
+        final Stream<PersonEmployerDuration> personEmployerDurationStream = employees.stream()
                 .flatMap(
                         e -> e.getJobHistory().stream()
                                 .collect(groupingBy(JobHistoryEntry::getEmployer, summingInt(JobHistoryEntry::getDuration)))
                                 .entrySet().stream()
-                                .map(es -> new StreamsExercise2.PersonEmployerDuration(e.getPerson(), es.getKey(), es.getValue())));
+                                .map(es -> new PersonEmployerDuration(e.getPerson(), es.getKey(), es.getValue())));
 
         return personEmployerDurationStream
                 .collect(groupingBy(
-                        StreamsExercise2.PersonEmployerDuration::getEmployer,
+                        PersonEmployerDuration::getEmployer,
                         collectingAndThen(
-                                maxBy(comparing(StreamsExercise2.PersonEmployerDuration::getDuration)), p -> p.get().getPerson())));
+                                maxBy(comparing(PersonEmployerDuration::getDuration)), p -> p.get().getPerson())));
     }
 
     @Test
