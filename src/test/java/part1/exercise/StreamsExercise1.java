@@ -6,11 +6,14 @@ import data.Person;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static data.Generator.generateEmployeeList;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class StreamsExercise1 {
     // https://youtu.be/kxgo7Y4cdA8 Сергей Куксенко и Алексей Шипилёв — Через тернии к лямбдам, часть 1
@@ -35,9 +38,19 @@ public class StreamsExercise1 {
                                 .stream()
                                 .anyMatch(jobHistoryEntry -> jobHistoryEntry.getEmployer().equals("epam")))
                         .map(Employee::getPerson)
+                        .distinct()
                         .collect(Collectors.toList());
 
-      // TODO: test
+        List<Person> expected = new ArrayList<>();
+        for (Employee e :employees) {
+            for (JobHistoryEntry jhe: e.getJobHistory())
+                if (jhe.getEmployer().equals("epam")) {
+                    final Person candidate = e.getPerson();
+                    if (! expected.contains(candidate)) expected.add(candidate);
+                }
+        }
+
+        assertThat(epamEmployees, containsInAnyOrder(expected.toArray()));
     }
 
     @Test
@@ -49,8 +62,12 @@ public class StreamsExercise1 {
                         .map(Employee::getPerson)
                         .collect(Collectors.toList());
 
-        // TODO: test
+        List<Person> expected = new ArrayList<>();
+        for (Employee e :employees)
+            if (e.getJobHistory().get(0).getEmployer().equals("epam"))
+                expected.add(e.getPerson());
 
+        assertThat(epamEmployees, containsInAnyOrder(expected.toArray()));
     }
 
     @Test
