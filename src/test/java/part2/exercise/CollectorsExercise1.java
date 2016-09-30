@@ -107,8 +107,9 @@ public class CollectorsExercise1 {
         @Override
         public BinaryOperator<Map<String, PersonPositionDuration>> combiner() {
             return (m1, m2) -> {
-                for (Map.Entry<String, PersonPositionDuration> e : m2.entrySet())
+                for (Map.Entry<String, PersonPositionDuration> e : m2.entrySet()) {
                     m1.merge(e.getKey(), e.getValue(), combiner);
+                }
                 return m1;
             };
         }
@@ -190,8 +191,9 @@ public class CollectorsExercise1 {
         @Override
         public BinaryOperator<Map<String, Integer>> combiner() {
             return (m1, m2) -> {
-                for (Map.Entry<String, Integer> e : m2.entrySet())
+                for (Map.Entry<String, Integer> e : m2.entrySet()) {
                     m1.merge(e.getKey(), e.getValue(), combiner);
+                }
                 return m1;
             };
         }
