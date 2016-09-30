@@ -52,7 +52,7 @@ public class CollectorCombination {
                 .collect(
                         paired(
                                 mapping(CollectorsExercise2.Pair::getKey, toMap(Key::getId, Function.identity(), (x, y) -> x)),
-                                mapping(CollectorsExercise2.Pair::getValue, groupingBy(Value::getKeyId, toList()))
+                                mapping(CollectorsExercise2.Pair::getValue, groupingBy(Value::getKeyId))
                         )
                 );
 
