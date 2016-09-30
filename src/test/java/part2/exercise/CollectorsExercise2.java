@@ -1,8 +1,5 @@
 package part2.exercise;
 
-import data.Employee;
-import data.JobHistoryEntry;
-import data.Person;
 import org.junit.Test;
 
 import java.util.*;
@@ -16,7 +13,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
+import static org.junit.Assert.assertEquals;
 
 public class CollectorsExercise2 {
 
@@ -108,17 +106,17 @@ public class CollectorsExercise2 {
     }
 
     private static class SubResult {
-        private final Map<Key, List<Value>> subResult;
+        private final Map<Key, Set<Value>> subResult;
         private final Map<String, List<Key>> knownKeys;
         private final Map<String, List<Value>> valuesWithoutKeys;
 
-        public SubResult(Map<Key, List<Value>> subResult, Map<String, List<Key>> knownKeys, Map<String, List<Value>> valuesWithoutKeys) {
+        public SubResult(Map<Key, Set<Value>> subResult, Map<String, List<Key>> knownKeys, Map<String, List<Value>> valuesWithoutKeys) {
             this.subResult = subResult;
             this.knownKeys = knownKeys;
             this.valuesWithoutKeys = valuesWithoutKeys;
         }
 
-        public Map<Key, List<Value>> getSubResult() {
+        public Map<Key, Set<Value>> getSubResult() {
             return subResult;
         }
 
@@ -134,6 +132,11 @@ public class CollectorsExercise2 {
     private static class MapPair {
         private final Map<String, Key> keyById;
         private final Map<String, List<Value>> valueById;
+
+        public MapPair() {
+            keyById = new HashMap<>();
+            valueById = new HashMap<>();
+        }
 
         public MapPair(Map<String, Key> keyById, Map<String, List<Value>> valueById) {
             this.keyById = keyById;
@@ -158,31 +161,76 @@ public class CollectorsExercise2 {
         };
     }
 
+    Map<Key, Set<Value>> collectKeysValuesMode0(List<Pair> pairs, Set<Value> orphansOutput) {
+        final Map<String, Key> keyMap1 = new HashMap<>();
+        final Map<Key, Set<Value>> result = new HashMap<>();
+        pairs.forEach(pair -> {
+            final Key key = pair.getKey();
+            keyMap1.put(key.getId(), key);
+            result.put(key, new HashSet<>());
+        });
+
+        orphansOutput.clear();
+
+        pairs.forEach(pair -> {
+            final Value value = pair.getValue();
+            String keyId = value.getKeyId();
+            if (keyMap1.containsKey(keyId))
+                result.get(keyMap1.get(keyId)).add(value);
+            else
+                orphansOutput.add(value);
+        });
+        return result;
+    }
+
+    Map<Key, Set<Value>> collectKeysValuesMode1(List<Pair> pairs, Set<Value> orphansOutput) {
+        final Map<String, Key> keyMap1 = pairs.stream()
+                .map(Pair::getKey)
+                .collect(toMap(Key::getId, Function.identity(), (k1, k2) -> k1));
+
+        orphansOutput.clear();
+
+        final Map<Key, Set<Value>> result = pairs.stream()
+                .map(Pair::getValue)
+                .collect(groupingBy(value -> keyMap1.get(value.getKeyId()), toSet()));
+
+        Set<Value> orphans = result.remove(null);
+        return result;
+    }
+
+
     @Test
     public void collectKeyValueMap() {
         final List<Pair> pairs = generatePairs(10, 100);
+
+        Set<Value> orph0 = new HashSet<>();
+        final Map<Key, Set<Value>> res0 = collectKeysValuesMode0(pairs, orph0);
+        Set<Value> orph1 = new HashSet<>();
+        final Map<Key, Set<Value>> res1 = collectKeysValuesMode1(pairs, orph1);
+        assertEquals(res0, res1);
+        assertEquals(orph0, orph1);
 
         // В два прохода
         // final Map<String, Key> keyMap1 = pairs.stream()...
 
         // final Map<String, List<Value>> valuesMap1 = pairs.stream()...
 
-        // В каждом Map.Entry id ключа должно совпадать с keyId для каждого значения в списке
-        // final Map<Key, List<Value>> keyValuesMap1 = valueMap1.entrySet().stream()...
+        // В каждом Map.Entry id ключа должно совпадать с keyId для каждого значения в списке11
+        // final Map<Key, Set<Value>> keyValuesMap1 = valueMap1.entrySet().stream()...
 
         // В 1 проход в 2 Map с использованием MapPair и mapMerger
         final MapPair res2 = pairs.stream()
                 .collect(new Collector<Pair, MapPair, MapPair>() {
                     @Override
                     public Supplier<MapPair> supplier() {
-                        // TODO
-                        throw new UnsupportedOperationException();
+                        return MapPair::new;
                     }
 
                     @Override
                     public BiConsumer<MapPair, Pair> accumulator() {
-                        // TODO add key and value to maps
-                        throw new UnsupportedOperationException();
+                        return (mp, p) -> {
+                            // TODO add key and value to maps
+                        };
                     }
 
                     @Override
@@ -207,8 +255,9 @@ public class CollectorsExercise2 {
         final Map<String, Key> keyMap2 = res2.getKeyById();
         final Map<String, List<Value>> valuesMap2 = res2.getValueById();
 
-        // final Map<Key, List<Value>> keyValuesMap2 = valueMap2.entrySet().stream()...
-
+        // final Map<Key, Set<Value>> keyValuesMap2 = valueMap2.entrySet().stream()...
+    }
+/*
         // Получение результата сразу:
 
         final SubResult res3 = pairs.stream()
@@ -244,9 +293,11 @@ public class CollectorsExercise2 {
                     }
                 });
 
-        final Map<Key, List<Value>> keyValuesMap3 = res3.getSubResult();
+        final Map<Key, Set<Value>> keyValuesMap3 = res3.getSubResult();
 
         // compare results
+    }
+
     }
 
 }
