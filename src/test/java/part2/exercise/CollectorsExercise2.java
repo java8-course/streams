@@ -161,7 +161,7 @@ public class CollectorsExercise2 {
         };
     }
 
-    private Map<Key, Set<Value>> collectKeysValuesMode0(List<Pair> pairs, Set<Value> orphansOutput) {
+    public static Map<Key, Set<Value>> collectKeysValuesMode0(List<Pair> pairs, Set<Value> orphansOutput) {
         final Map<String, Key> keyMap1 = new HashMap<>();
         final Map<Key, Set<Value>> result = new HashMap<>();
         pairs.forEach(pair -> {
@@ -192,7 +192,7 @@ public class CollectorsExercise2 {
     // final Map<Key, Set<Value>> keyValuesMap1 = valueMap1.entrySet().stream()...
 
     // final Map<Key, Set<Value>> keyValuesMap2 = valueMap2.entrySet().stream()...
-    private Map<Key, Set<Value>> collectKeysValuesMode1(List<Pair> pairs, Set<Value> orphansOutput) {
+    private static Map<Key, Set<Value>> collectKeysValuesMode1(List<Pair> pairs, Set<Value> orphansOutput) {
         final Map<String, Key> keyMap1 = pairs.stream()
                 .map(Pair::getKey)
                 .collect(toMap(Key::getId, Function.identity(), (k1, k2) -> k1));
@@ -208,7 +208,7 @@ public class CollectorsExercise2 {
     }
 
     // В 1 проход в 2 Map с использованием MapPair и mapMerger
-    private Map<Key, Set<Value>> collectKeysValuesMode2(List<Pair> pairs) {
+    private static Map<Key, Set<Value>> collectKeysValuesMode2(List<Pair> pairs) {
         final MapPair mapPair = pairs.stream()
                 .collect(new Collector<Pair, MapPair, MapPair>() {
                     @Override
@@ -245,7 +245,7 @@ public class CollectorsExercise2 {
                             final Map<String, Key> newKeymap = CollectorsExercise2.<String, Key, Map<String, Key>>
                                     mapMerger((k1, k2) -> k1).apply(m1.getKeyById(), m2.getKeyById());
 
-                            // And here?!
+                            // and here?!
                             final Map<String, Set<Value>> newValueMap =
                                     CollectorsExercise2.<String, Set<Value>, Map<String, Set<Value>>>
                                             mapMerger(combineSets).apply(m1.getValueById(), m2.getValueById());
