@@ -5,6 +5,7 @@ import data.JobHistoryEntry;
 import data.Person;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.junit.Test;
 
 import java.util.*;
@@ -66,21 +67,11 @@ public class CollectorsExercise1 {
         @Getter
         private static final Collector<PersonPositionDuration, Map<String, PersonPositionDuration>, Map<String, Person>> instance = new CollectCoolest();
 
-        private final BiConsumer<Map<String, PersonPositionDuration>, PersonPositionDuration> accumulator = (stringPersonMap, personPositionDuration) -> {
-            putIfCooler(stringPersonMap, personPositionDuration.getPosition(), personPositionDuration);
-        };
-
-        private final BinaryOperator<Map<String, PersonPositionDuration>> combiner = (map1, map2) -> {
-            map2.entrySet().forEach(kvp -> putIfCooler(map1, kvp.getKey(), kvp.getValue()));
-            return map1;
-        };
-
         private CollectCoolest() {
         }
 
-        private void putIfCooler(Map<String, PersonPositionDuration> map, String key, PersonPositionDuration ppd) {
-            if (!map.containsKey(key) || map.get(key).getDuration() < ppd.getDuration())
-                map.put(key, ppd);
+        private static PersonPositionDuration whateverIsCooler(PersonPositionDuration ppd1, PersonPositionDuration ppd2) {
+            return (ppd1.getDuration() > ppd2.getDuration()) ? ppd1 : ppd2;
         }
 
         @Override
@@ -90,12 +81,18 @@ public class CollectorsExercise1 {
 
         @Override
         public BiConsumer<Map<String, PersonPositionDuration>, PersonPositionDuration> accumulator() {
-            return accumulator;
+            return (stringPersonMap, personPositionDuration) -> {
+                stringPersonMap.merge(personPositionDuration.getPosition(), personPositionDuration,
+                        CollectCoolest::whateverIsCooler);
+            };
         }
 
         @Override
         public BinaryOperator<Map<String, PersonPositionDuration>> combiner() {
-            return combiner;
+            return (map1, map2) -> {
+                map2.forEach((k, v) -> map1.merge(k, v, CollectCoolest::whateverIsCooler));
+                return map1;
+            };
         }
 
         @Override
@@ -139,38 +136,27 @@ public class CollectorsExercise1 {
                                 ppd -> ppd.get().getPerson())));
     }
 
-    private static class JobHistoryCombiner implements Collector<JobHistoryEntry, Map<String, int[]>, Stream<PersonPositionDuration>> {
+    @RequiredArgsConstructor
+    private static class IntMap<T> extends HashMap<T, int[]> {
+        private final IntBinaryOperator remappingFunction;
+
+        int merge(T key, int value) {
+            final int[] v = get(key);
+            if (v == null) {
+                put(key, new int[]{value});
+                return value;
+            }
+            return (v[0] = remappingFunction.applyAsInt(v[0], value));
+        }
+    }
+
+    @RequiredArgsConstructor
+    private static class JobHistoryCombiner implements Collector<JobHistoryEntry, IntMap<String>, Stream<PersonPositionDuration>> {
+
         private static final IntBinaryOperator SUMMING_COMBINER = (i1, i2) -> i1 + i2;
 
+        private final Person person;
         private final IntBinaryOperator durationCombiner;
-
-        private JobHistoryCombiner(Person person, IntBinaryOperator durationCombiner) {
-            finisher = m -> m.entrySet().stream()
-                    .map(entry -> new PersonPositionDuration(person, entry.getKey(), entry.getValue()[0]));
-            this.durationCombiner = durationCombiner;
-        }
-
-        private void putOrCombine(Map<String, int[]> map, String key, int value) {
-            if (map.containsKey(key)) {
-                final int[] v = map.get(key);
-                v[0] = durationCombiner.applyAsInt(v[0], value);
-            } else {
-                int[] newV = {value};
-                map.put(key, newV);
-            }
-        }
-
-        private final BiConsumer<Map<String, int[]>, JobHistoryEntry> accumulator = (map, jhe) -> {
-            String pos = jhe.getPosition();
-            putOrCombine(map, pos, jhe.getDuration());
-        };
-
-        private final BinaryOperator<Map<String, int[]>> combiner = (map1, map2) -> {
-            map2.entrySet().forEach(entry -> putOrCombine(map1, entry.getKey(), entry.getValue()[0]));
-            return map1;
-        };
-
-        private final Function<Map<String, int[]>, Stream<PersonPositionDuration>> finisher;
 
         /**
          * Combines JobHistoryEntry objects by position applying custom binary operator to durations.
@@ -208,23 +194,28 @@ public class CollectorsExercise1 {
         }
 
         @Override
-        public Supplier<Map<String, int[]>> supplier() {
-            return HashMap::new;
+        public Supplier<IntMap<String>> supplier() {
+            return () -> new IntMap<>(durationCombiner);
         }
 
         @Override
-        public BiConsumer<Map<String, int[]>, JobHistoryEntry> accumulator() {
-            return accumulator;
+        public BiConsumer<IntMap<String>, JobHistoryEntry> accumulator() {
+            return (map, jhe) ->
+                    map.merge(jhe.getPosition(), jhe.getDuration());
         }
 
         @Override
-        public BinaryOperator<Map<String, int[]>> combiner() {
-            return combiner;
+        public BinaryOperator<IntMap<String>> combiner() {
+            return (map1, map2) -> {
+                map2.entrySet().forEach(entry -> map1.merge(entry.getKey(), entry.getValue()[0]));
+                return map1;
+            };
         }
 
         @Override
-        public Function<Map<String, int[]>, Stream<PersonPositionDuration>> finisher() {
-            return finisher;
+        public Function<IntMap<String>, Stream<PersonPositionDuration>> finisher() {
+            return m -> m.entrySet().stream()
+                    .map(entry -> new PersonPositionDuration(person, entry.getKey(), entry.getValue()[0]));
         }
 
         @Override
