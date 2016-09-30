@@ -131,14 +131,14 @@ public class CollectorsExercise2 {
 
     private static class MapPair {
         private final Map<String, Key> keyById;
-        private final Map<String, List<Value>> valueById;
+        private final Map<String, Set<Value>> valueById;
 
         public MapPair() {
             keyById = new HashMap<>();
             valueById = new HashMap<>();
         }
 
-        public MapPair(Map<String, Key> keyById, Map<String, List<Value>> valueById) {
+        public MapPair(Map<String, Key> keyById, Map<String, Set<Value>> valueById) {
             this.keyById = keyById;
             this.valueById = valueById;
         }
@@ -147,7 +147,7 @@ public class CollectorsExercise2 {
             return keyById;
         }
 
-        public Map<String, List<Value>> getValueById() {
+        public Map<String, Set<Value>> getValueById() {
             return valueById;
         }
     }
@@ -161,7 +161,7 @@ public class CollectorsExercise2 {
         };
     }
 
-    Map<Key, Set<Value>> collectKeysValuesMode0(List<Pair> pairs, Set<Value> orphansOutput) {
+    private Map<Key, Set<Value>> collectKeysValuesMode0(List<Pair> pairs, Set<Value> orphansOutput) {
         final Map<String, Key> keyMap1 = new HashMap<>();
         final Map<Key, Set<Value>> result = new HashMap<>();
         pairs.forEach(pair -> {
@@ -183,7 +183,16 @@ public class CollectorsExercise2 {
         return result;
     }
 
-    Map<Key, Set<Value>> collectKeysValuesMode1(List<Pair> pairs, Set<Value> orphansOutput) {
+    // В два прохода
+    // final Map<String, Key> keyMap1 = pairs.stream()...
+
+    // final Map<String, List<Value>> valuesMap1 = pairs.stream()...
+
+    // В каждом Map.Entry id ключа должно совпадать с keyId для каждого значения в списке11
+    // final Map<Key, Set<Value>> keyValuesMap1 = valueMap1.entrySet().stream()...
+
+    // final Map<Key, Set<Value>> keyValuesMap2 = valueMap2.entrySet().stream()...
+    private Map<Key, Set<Value>> collectKeysValuesMode1(List<Pair> pairs, Set<Value> orphansOutput) {
         final Map<String, Key> keyMap1 = pairs.stream()
                 .map(Pair::getKey)
                 .collect(toMap(Key::getId, Function.identity(), (k1, k2) -> k1));
@@ -194,32 +203,13 @@ public class CollectorsExercise2 {
                 .map(Pair::getValue)
                 .collect(groupingBy(value -> keyMap1.get(value.getKeyId()), toSet()));
 
-        Set<Value> orphans = result.remove(null);
+        Optional.ofNullable(result.remove(null)).ifPresent(orphansOutput::addAll);
         return result;
     }
 
-
-    @Test
-    public void collectKeyValueMap() {
-        final List<Pair> pairs = generatePairs(10, 100);
-
-        Set<Value> orph0 = new HashSet<>();
-        final Map<Key, Set<Value>> res0 = collectKeysValuesMode0(pairs, orph0);
-        Set<Value> orph1 = new HashSet<>();
-        final Map<Key, Set<Value>> res1 = collectKeysValuesMode1(pairs, orph1);
-        assertEquals(res0, res1);
-        assertEquals(orph0, orph1);
-
-        // В два прохода
-        // final Map<String, Key> keyMap1 = pairs.stream()...
-
-        // final Map<String, List<Value>> valuesMap1 = pairs.stream()...
-
-        // В каждом Map.Entry id ключа должно совпадать с keyId для каждого значения в списке11
-        // final Map<Key, Set<Value>> keyValuesMap1 = valueMap1.entrySet().stream()...
-
-        // В 1 проход в 2 Map с использованием MapPair и mapMerger
-        final MapPair res2 = pairs.stream()
+    // В 1 проход в 2 Map с использованием MapPair и mapMerger
+    private Map<Key, Set<Value>> collectKeysValuesMode2(List<Pair> pairs) {
+        final MapPair mapPair = pairs.stream()
                 .collect(new Collector<Pair, MapPair, MapPair>() {
                     @Override
                     public Supplier<MapPair> supplier() {
@@ -229,14 +219,39 @@ public class CollectorsExercise2 {
                     @Override
                     public BiConsumer<MapPair, Pair> accumulator() {
                         return (mp, p) -> {
-                            // TODO add key and value to maps
+                            final Key key = p.getKey();
+                            final Value value = p.getValue();
+                            final Map<String, Key> keyById = mp.getKeyById();
+                            final Map<String, Set<Value>> valueById = mp.getValueById();
+                            keyById.put(key.getId(), key);
+                            valueById.compute(value.getKeyId(), (s, valueSet) -> {
+                                if (valueSet == null) valueSet = new HashSet<>();
+                                valueSet.add(value);
+                                return valueSet;
+                            });
                         };
                     }
 
+                    private final BinaryOperator<Set<Value>> combineSets =
+                            (s1, s2) -> {
+                                s1.addAll(s2);
+                                return s1;
+                            };
+
                     @Override
                     public BinaryOperator<MapPair> combiner() {
-                        // TODO use mapMerger
-                        throw new UnsupportedOperationException();
+                        return (m1, m2) -> {
+                            // Why doesn't type inference work here...
+                            final Map<String, Key> newKeymap = CollectorsExercise2.<String, Key, Map<String, Key>>
+                                    mapMerger((k1, k2) -> k1).apply(m1.getKeyById(), m2.getKeyById());
+
+                            // And here?!
+                            final Map<String, Set<Value>> newValueMap =
+                                    CollectorsExercise2.<String, Set<Value>, Map<String, Set<Value>>>
+                                            mapMerger(combineSets).apply(m1.getValueById(), m2.getValueById());
+
+                            return new MapPair(newKeymap, newValueMap);
+                        };
                     }
 
                     @Override
@@ -252,51 +267,26 @@ public class CollectorsExercise2 {
                     }
                 });
 
-        final Map<String, Key> keyMap2 = res2.getKeyById();
-        final Map<String, List<Value>> valuesMap2 = res2.getValueById();
+        final Map<String, Key> keyMap = mapPair.getKeyById();
+        final Map<String, Set<Value>> valueMap = mapPair.getValueById();
 
-        // final Map<Key, Set<Value>> keyValuesMap2 = valueMap2.entrySet().stream()...
+        return valueMap.entrySet().stream()
+                .collect(toMap(entry -> keyMap.get(entry.getKey()), Map.Entry::getValue));
     }
-/*
-        // Получение результата сразу:
 
-        final SubResult res3 = pairs.stream()
-                .collect(new Collector<Pair, SubResult, SubResult>() {
-                    @Override
-                    public Supplier<SubResult> supplier() {
-                        // TODO
-                        throw new UnsupportedOperationException();
-                    }
+    @Test
+    public void collectKeyValueMap() {
+        final List<Pair> pairs = generatePairs(10, 100);
 
-                    @Override
-                    public BiConsumer<SubResult, Pair> accumulator() {
-                        // TODO add key to map, then check value.keyId and add it to one of maps
-                        throw new UnsupportedOperationException();
-                    }
+        Set<Value> orph0 = new HashSet<>();
+        final Map<Key, Set<Value>> res0 = collectKeysValuesMode0(pairs, orph0);
+        Set<Value> orph1 = new HashSet<>();
+        final Map<Key, Set<Value>> res1 = collectKeysValuesMode1(pairs, orph1);
+        assertEquals(res0, res1);
+        assertEquals(orph0, orph1);
 
-                    @Override
-                    public BinaryOperator<SubResult> combiner() {
-                        // TODO use mapMerger, then check all valuesWithoutKeys
-                        throw new UnsupportedOperationException();
-                    }
-
-                    @Override
-                    public Function<SubResult, SubResult> finisher() {
-                        // TODO use mapMerger, then check all valuesWithoutKeys
-                        throw new UnsupportedOperationException();
-                    }
-
-                    @Override
-                    public Set<Characteristics> characteristics() {
-                        return Collections.unmodifiableSet(EnumSet.of(
-                                Characteristics.UNORDERED));
-                    }
-                });
-
-        final Map<Key, Set<Value>> keyValuesMap3 = res3.getSubResult();
-
-        // compare results
-    }
+        Map<Key, Set<Value>> res2 = collectKeysValuesMode2(pairs);
+        assertEquals(res2, res0);
 
     }
 
