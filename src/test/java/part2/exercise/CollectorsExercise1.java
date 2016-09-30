@@ -21,9 +21,9 @@ public class CollectorsExercise1 {
     }
 
     private static class PersonPositionDuration {
-        private Person person = null;
-        private String position = "";
-        private int duration = 0;
+        private final Person person;
+        private final String position;
+        private final int duration;
 
         public PersonPositionDuration(Person person, String position, int duration) {
             this.person = person;
@@ -31,30 +31,15 @@ public class CollectorsExercise1 {
             this.duration = duration;
         }
 
-        public void setPerson(Person person) {
-            this.person = person;
-        }
-
-        public void setPosition(String position) {
-            this.position = position;
-        }
-
-        public void setDuration(int duration) {
-            this.duration = duration;
-        }
-
-        public PersonPositionDuration() {
-        }
-
-        public Person getPerson() {
+        Person getPerson() {
             return person;
         }
 
-        public String getPosition() {
+        String getPosition() {
             return position;
         }
 
-        public int getDuration() {
+        int getDuration() {
             return duration;
         }
     }
@@ -72,13 +57,17 @@ public class CollectorsExercise1 {
                 .collect(
                         groupingBy(
                                 PersonPositionDuration::getPosition,
-                                collectingAndThen(maxBy(Comparator.comparing(PersonPositionDuration::getDuration)), p -> p.get().getPerson())
+                                collectingAndThen(maxBy(
+                                        Comparator.comparing(PersonPositionDuration::getDuration)),
+                                        p -> p.get().getPerson())
                         ));
 
         employees.stream()
                 .flatMap(employee -> employee.getJobHistory().stream()
                         .map(entry -> new PersonPositionDuration(employee.getPerson(), entry.getPosition(), entry.getDuration())))
-                .collect(toMap(PersonPositionDuration::getPosition, Function.identity(), BinaryOperator.maxBy(Comparator.comparing(PersonPositionDuration::getDuration))))
+                .collect(toMap(PersonPositionDuration::getPosition,
+                        Function.identity(),
+                        BinaryOperator.maxBy(Comparator.comparing(PersonPositionDuration::getDuration))))
                 .entrySet().stream()
                 .collect(toMap(Map.Entry::getKey, entry -> entry.getValue().getPerson()));
 
