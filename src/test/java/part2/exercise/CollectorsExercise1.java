@@ -81,10 +81,8 @@ public class CollectorsExercise1 {
 
         @Override
         public BiConsumer<Map<String, PersonPositionDuration>, PersonPositionDuration> accumulator() {
-            return (stringPersonMap, personPositionDuration) -> {
-                stringPersonMap.merge(personPositionDuration.getPosition(), personPositionDuration,
-                        CollectCoolest::whateverIsCooler);
-            };
+            return (stringPersonMap, personPositionDuration) -> stringPersonMap.merge(personPositionDuration.getPosition(), personPositionDuration,
+                    CollectCoolest::whateverIsCooler);
         }
 
         @Override
@@ -97,7 +95,7 @@ public class CollectorsExercise1 {
 
         @Override
         public Function<Map<String, PersonPositionDuration>, Map<String, Person>> finisher() {
-            return spdmap -> spdmap.keySet().stream().collect(toMap(Function.identity(), key -> spdmap.get(key).getPerson()));
+            return spdmap -> spdmap.entrySet().stream().collect(toMap(Map.Entry::getKey, entry -> entry.getValue().getPerson()));
         }
 
         @Override
