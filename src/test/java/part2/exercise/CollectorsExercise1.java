@@ -122,9 +122,9 @@ public class CollectorsExercise1 {
 
         @Override
         public Set<Characteristics> characteristics() {
-            return Collections.unmodifiableSet(
-                    EnumSet.of(Characteristics.CONCURRENT));
+            return Collections.emptySet();
         }
+
     }
 
     private Map<String, Person> getCoolestByPositionCustomCollector(List<Employee> employees) {
