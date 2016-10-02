@@ -131,7 +131,7 @@ public class CollectorsExercise2 {
         }
     }
 
-    private static class MapPair {
+    public static class MapPair {
         private final Map<String, Key> keyById;
         private final Map<String, List<Value>> valueById;
 
@@ -195,55 +195,54 @@ public class CollectorsExercise2 {
 
     }
 
+    private static class MapPairCollector implements Collector<Pair, MapPair, MapPair> {
 
-    private static Map<Key, List<Value>> collectKeyValueMapPair(List<Pair> pairs) {
-
-        class MapPairCollector implements Collector<Pair, MapPair, MapPair> {
-
-            @Override
-            public Supplier<MapPair> supplier() {
-                return MapPair::new;
-            }
-
-            @Override
-            public BiConsumer<MapPair, Pair> accumulator() {
-                return (m, p) -> {
-                    final Key key = p.getKey();
-                    final String sKey = key.toString();
-                    final Value value = p.getValue();
-                    final Map<String, Key> keyMap = m.getKeyById();
-                    final Map<String, List<Value>> valueMap = m.getValueById();
-                    keyMap.put(sKey, key);
-                    if (!valueMap.containsKey(sKey))
-                        valueMap.put(sKey, new ArrayList<>());
-                    valueMap.get(sKey).add(value);
-                };
-            }
-
-            @Override
-            public BinaryOperator<MapPair> combiner() {
-                return (a, b) -> {
-                    final BinaryOperator<Map<String, Key>> keyMerger = mapMerger((k1, k2) -> k1);
-                    final BinaryOperator<Map<String, List<Value>>> valueMerger = mapMerger((v1, v2) -> { v1.addAll(v2); return v1; });
-                    return new MapPair(
-                            keyMerger.apply(a.getKeyById(), b.getKeyById()),
-                            valueMerger.apply(a.getValueById(), b.getValueById()));
-                };
-            }
-
-            @Override
-            public Function<MapPair, MapPair> finisher() {
-                return Function.identity();
-            }
-
-            @Override
-            public Set<Characteristics> characteristics() {
-                return Collections.unmodifiableSet(EnumSet.of(
-                        Characteristics.UNORDERED,
-                        Characteristics.IDENTITY_FINISH));
-            }
-
+        @Override
+        public Supplier<MapPair> supplier() {
+            return MapPair::new;
         }
+
+        @Override
+        public BiConsumer<MapPair, Pair> accumulator() {
+            return (m, p) -> {
+                final Key key = p.getKey();
+                final String sKey = key.toString();
+                final Value value = p.getValue();
+                final Map<String, Key> keyMap = m.getKeyById();
+                final Map<String, List<Value>> valueMap = m.getValueById();
+                keyMap.put(sKey, key);
+                if (!valueMap.containsKey(sKey))
+                    valueMap.put(sKey, new ArrayList<>());
+                valueMap.get(sKey).add(value);
+            };
+        }
+
+        @Override
+        public BinaryOperator<MapPair> combiner() {
+            return (a, b) -> {
+                final BinaryOperator<Map<String, Key>> keyMerger = mapMerger((k1, k2) -> k1);
+                final BinaryOperator<Map<String, List<Value>>> valueMerger = mapMerger((v1, v2) -> { v1.addAll(v2); return v1; });
+                return new MapPair(
+                        keyMerger.apply(a.getKeyById(), b.getKeyById()),
+                        valueMerger.apply(a.getValueById(), b.getValueById()));
+            };
+        }
+
+        @Override
+        public Function<MapPair, MapPair> finisher() {
+            return Function.identity();
+        }
+
+        @Override
+        public Set<Characteristics> characteristics() {
+            return Collections.unmodifiableSet(EnumSet.of(
+                    Characteristics.UNORDERED,
+                    Characteristics.IDENTITY_FINISH));
+        }
+
+    }
+
+    public static Map<Key, List<Value>> collectKeyValueMapPair(List<Pair> pairs) {
 
         final MapPair mapPair = pairs.stream().collect(new MapPairCollector());
         final Map<String, Key> keyMap = mapPair.getKeyById();
@@ -258,12 +257,10 @@ public class CollectorsExercise2 {
     @Test
     public void collectKeyValueMap() {
         final List<Pair> pairs = generatePairs(10, 100);
-
         final Map<Key, List<Value>> expectedWithoutStream = collectKeyValueMapWithoutStream(pairs);
-        assertThat(collectKeyValueMapDoubleIteration(pairs).entrySet(), everyItem(isIn(expectedWithoutStream.entrySet())));
 
-        final Map<Key, List<Value>> expectedMapPair = collectKeyValueMapPair(pairs);
-        assertThat(collectKeyValueMapDoubleIteration(pairs).entrySet(), everyItem(isIn(expectedMapPair.entrySet())));
+        assertThat(collectKeyValueMapDoubleIteration(pairs).entrySet(), everyItem(isIn(expectedWithoutStream.entrySet())));
+        assertThat(collectKeyValueMapPair(pairs).entrySet(), everyItem(isIn(expectedWithoutStream.entrySet())));
 
     }
 
