@@ -181,30 +181,37 @@ public class CollectorsExercise2 {
         // В каждом Map.Entry id ключа должно совпадать с keyId для каждого значения в списке
         // final Map<Key, List<Value>> keyValuesMap1 = valueMap1.entrySet().stream()...
 //        final Map<Key, List<Value>> keyValuesMap1 =
-                valuesMap1
-                        .entrySet()
-                        .stream()
-                        .filter(o->o.getKey().equals(keyMap1.get(o.getKey()).getId()))
-                        .collect(Collectors.groupingBy(o->o.getKey()));
+        Map<Key, List<Value>> collect = valuesMap1
+                .entrySet()
+                .stream()
+                .filter(o -> o.getKey().equals(keyMap1.get(o.getKey()).getId()))
+                .collect(Collectors.toMap(o -> keyMap1.get(o.getKey()), p -> p.getValue()));
+
+
+
         // В 1 проход в 2 Map с использованием MapPair и mapMerger
         final MapPair res2 = pairs.stream()
                 .collect(new Collector<Pair, MapPair, MapPair>() {
                     @Override
                     public Supplier<MapPair> supplier() {
-                        // TODO
-                        throw new UnsupportedOperationException();
+                        return MapPair::new;
                     }
 
                     @Override
                     public BiConsumer<MapPair, Pair> accumulator() {
                         // TODO add key and value to maps
-                        throw new UnsupportedOperationException();
+                        return new BiConsumer<MapPair, Pair>() {
+                            @Override
+                            public void accept(MapPair mapPair, Pair pair) {
+                                mapPair.getValueById().compute(pair.getValue().getKeyId(), )
+                            }
+                        }
                     }
 
                     @Override
                     public BinaryOperator<MapPair> combiner() {
                         // TODO use mapMerger
-                        throw new UnsupportedOperationException();
+                        return (key, value) -> key.getKeyById() //need time
                     }
 
                     @Override
