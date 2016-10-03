@@ -113,10 +113,9 @@ public class CollectorsExercise1 {
                         .stream()
                         .collect(groupingBy(JobHistoryEntry::getPosition, summingInt(JobHistoryEntry::getDuration)))
                         .entrySet()
-                        .stream().map(//TODO brain is damaged... need some time for reabilitation
+                        .stream().map(entry -> new PersonPositionDuration(emp.getPerson(), entry.getKey(), entry.getValue()))//TODO brain is damaged... need some time for reabilitation
                         .collect(groupingBy(
-                                //TODO brain is damaged... need some time for reabilitati
-                        )))
+                        )));
     }
 
     private List<Employee> getEmployees() {
