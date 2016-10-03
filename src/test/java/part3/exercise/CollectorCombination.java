@@ -5,6 +5,7 @@ import part2.exercise.CollectorsExercise2;
 import part2.exercise.CollectorsExercise2.Key;
 import part2.exercise.CollectorsExercise2.Value;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,12 +15,12 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
-import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.*;
 import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.core.Every.everyItem;
 import static org.junit.Assert.assertThat;
-import static part2.exercise.CollectorsExercise2.*;
+import static part2.exercise.CollectorsExercise2.collectKeyValueMapPair;
+import static part2.exercise.CollectorsExercise2.generatePairs;
 
 public class CollectorCombination {
 
@@ -88,7 +89,10 @@ public class CollectorCombination {
 
             @Override
             public Set<Characteristics> characteristics() {
-                return emptySet();
+                return EnumSet.of(Characteristics.CONCURRENT, Characteristics.UNORDERED, Characteristics.IDENTITY_FINISH).stream()
+                        .filter(c1.characteristics()::contains)
+                        .filter(c1.characteristics()::contains)
+                        .collect(toSet());
             }
         };
     }
