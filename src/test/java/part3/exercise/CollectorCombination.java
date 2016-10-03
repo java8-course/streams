@@ -6,15 +6,13 @@ import part2.exercise.CollectorsExercise2.MapPair;
 import part2.exercise.CollectorsExercise2.Value;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
 import static org.junit.Assert.assertEquals;
@@ -88,7 +86,10 @@ public class CollectorCombination {
 
             @Override
             public Set<Characteristics> characteristics() {
-                return Collections.emptySet();
+                return EnumSet.of(Characteristics.CONCURRENT, Characteristics.UNORDERED, Characteristics.IDENTITY_FINISH).stream()
+                        .filter(c1.characteristics()::contains)
+                        .filter(c2.characteristics()::contains)
+                        .collect(Collectors.toSet());
             }
         };
     }
