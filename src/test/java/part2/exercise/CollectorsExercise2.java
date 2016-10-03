@@ -211,7 +211,11 @@ public class CollectorsExercise2 {
                     @Override
                     public BinaryOperator<MapPair> combiner() {
                         // TODO use mapMerger
-                        return (key, value) -> key.getKeyById() //need time
+                        return (key, value) -> {
+                            final BinaryOperator<Map<String, Key>> merge = mapMerger((a,b) -> a);
+                            mapMerger((a,b)->a).apply(key, value.getKeyById());
+                            return  key;
+                        };
                     }
 
                     @Override
