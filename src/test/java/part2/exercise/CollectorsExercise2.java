@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
 
 public class CollectorsExercise2 {
 
@@ -135,6 +135,10 @@ public class CollectorsExercise2 {
         private final Map<String, Key> keyById;
         private final Map<String, List<Value>> valueById;
 
+        public MapPair() {
+            this(new HashMap<>(), new HashMap<>());
+        }
+
         public MapPair(Map<String, Key> keyById, Map<String, List<Value>> valueById) {
             this.keyById = keyById;
             this.valueById = valueById;
@@ -163,32 +167,55 @@ public class CollectorsExercise2 {
         final List<Pair> pairs = generatePairs(10, 100);
 
         // В два прохода
-        // final Map<String, Key> keyMap1 = pairs.stream()...
+        final Map<String, Key> keyMap1 = pairs.stream()
+                .collect(toMap((Pair p) -> p.getKey().getId(), Pair::getKey, (k1, k2) -> k2));
 
-        // final Map<String, List<Value>> valuesMap1 = pairs.stream()...
+        final Map<String, List<Value>> valuesMap1 = pairs.stream()
+                .collect(groupingBy((Pair p) -> p.getValue().getKeyId(), mapping(Pair::getValue, toList())));
 
         // В каждом Map.Entry id ключа должно совпадать с keyId для каждого значения в списке
-        // final Map<Key, List<Value>> keyValuesMap1 = valueMap1.entrySet().stream()...
+        final Map<Key, List<Value>> keyValuesMap1 = valuesMap1.entrySet().stream()
+                .filter((entry) -> keyMap1.containsKey(entry.getKey()))
+                .collect(toMap((entry) -> keyMap1.get(entry.getKey()), Map.Entry::getValue));
+
 
         // В 1 проход в 2 Map с использованием MapPair и mapMerger
         final MapPair res2 = pairs.stream()
                 .collect(new Collector<Pair, MapPair, MapPair>() {
                     @Override
                     public Supplier<MapPair> supplier() {
-                        // TODO
-                        throw new UnsupportedOperationException();
+                        return MapPair::new;
                     }
 
                     @Override
                     public BiConsumer<MapPair, Pair> accumulator() {
                         // TODO add key and value to maps
-                        throw new UnsupportedOperationException();
+                        return (MapPair mp, Pair p) -> {
+                            mp.getKeyById().put(p.getKey().getId(), p.getKey());
+                            mp.getValueById().merge(
+                                    p.getValue().getKeyId(),
+                                    new ArrayList<>(Arrays.asList(p.getValue())),
+                                    (valuesMap1, valuesMap2) -> {
+                                        valuesMap1.addAll(valuesMap2);
+                                        return valuesMap1;
+                                    });
+                        };
                     }
 
                     @Override
                     public BinaryOperator<MapPair> combiner() {
                         // TODO use mapMerger
-                        throw new UnsupportedOperationException();
+                        return (MapPair m1, MapPair m2) -> {
+                            BinaryOperator<Map<String, Key>> keysMapper = mapMerger((k1, k2) -> k2);
+                            Map<String, Key> mapOfKeys = keysMapper.apply(m1.getKeyById(), m2.getKeyById());
+
+                            BinaryOperator<Map<String, List<Value>>> valuesMapper = mapMerger((values, values2) -> {
+                                values.addAll(values2);
+                                return values;
+                            });
+                            Map<String, List<Value>> mapOfValues = valuesMapper.apply(m1.getValueById(), m2.getValueById());
+                        return new MapPair(mapOfKeys, mapOfValues);
+                        };
                     }
 
                     @Override
