@@ -33,6 +33,7 @@ public class CollectorsExample {
     public void incorrectReducePersonsToString() {
         final Stream<Person> personStream = getPersonStream();
 
+        // a + (b + c) == (a + b) + c
         // [a, b, c, d] -> [[a, b], [c, d]]
         final String result = personStream//.parallel()
                 // .reduce((a, b) -> ???) Optional<T> reduce(BinaryOperator<T> accumulator)
@@ -51,7 +52,7 @@ public class CollectorsExample {
     @Test
     public void incorrectCollectPersonsToString() {
         final StringBuilder res = getPersonStream().parallel()
-                // unordered
+                //.unordered()
                 .collect(
                         StringBuilder::new, // synchronization is in Stream
                         (builder, person) -> builder.append("\n and ").append(person),
@@ -105,9 +106,7 @@ public class CollectorsExample {
                             @Override
                             public Set<Characteristics> characteristics() {
                                 //return Collections.emptySet();
-                                return Collections.unmodifiableSet(EnumSet.of(
-                                        Characteristics.CONCURRENT/*,
-                                        Characteristics.UNORDERED*/));
+                                return Collections.emptySet();
                             }
                         }
                 );
