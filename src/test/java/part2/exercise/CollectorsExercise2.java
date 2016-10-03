@@ -131,7 +131,7 @@ public class CollectorsExercise2 {
         }
     }
 
-    private static class MapPair {
+    public static class MapPair {
         private final Map<String, Key> keyById;
         private final Map<String, List<Value>> valueById;
 
@@ -181,55 +181,7 @@ public class CollectorsExercise2 {
 
         // В 1 проход в 2 Map с использованием MapPair и mapMerger
         final MapPair res2 = pairs.stream()
-                .collect(new Collector<Pair, MapPair, MapPair>() {
-                    @Override
-                    public Supplier<MapPair> supplier() {
-                        return MapPair::new;
-                    }
-
-                    @Override
-                    public BiConsumer<MapPair, Pair> accumulator() {
-                        // TODO add key and value to maps
-                        return (MapPair mp, Pair p) -> {
-                            mp.getKeyById().put(p.getKey().getId(), p.getKey());
-                            mp.getValueById().merge(
-                                    p.getValue().getKeyId(),
-                                    new ArrayList<>(Arrays.asList(p.getValue())),
-                                    (valuesMap1, valuesMap2) -> {
-                                        valuesMap1.addAll(valuesMap2);
-                                        return valuesMap1;
-                                    });
-                        };
-                    }
-
-                    @Override
-                    public BinaryOperator<MapPair> combiner() {
-                        // TODO use mapMerger
-                        return (MapPair m1, MapPair m2) -> {
-                            BinaryOperator<Map<String, Key>> keysMapper = mapMerger((k1, k2) -> k2);
-                            Map<String, Key> mapOfKeys = keysMapper.apply(m1.getKeyById(), m2.getKeyById());
-
-                            BinaryOperator<Map<String, List<Value>>> valuesMapper = mapMerger((values, values2) -> {
-                                values.addAll(values2);
-                                return values;
-                            });
-                            Map<String, List<Value>> mapOfValues = valuesMapper.apply(m1.getValueById(), m2.getValueById());
-                        return new MapPair(mapOfKeys, mapOfValues);
-                        };
-                    }
-
-                    @Override
-                    public Function<MapPair, MapPair> finisher() {
-                        return Function.identity();
-                    }
-
-                    @Override
-                    public Set<Characteristics> characteristics() {
-                        return Collections.unmodifiableSet(EnumSet.of(
-                                Characteristics.UNORDERED,
-                                Characteristics.IDENTITY_FINISH));
-                    }
-                });
+                .collect(new MapPairCollector());
 
         final Map<String, Key> keyMap2 = res2.getKeyById();
         final Map<String, List<Value>> valuesMap2 = res2.getValueById();
@@ -276,4 +228,53 @@ public class CollectorsExercise2 {
         // compare results
     }
 
+    public static class MapPairCollector implements Collector<Pair, MapPair, MapPair> {
+        @Override
+        public Supplier<MapPair> supplier() {
+            return MapPair::new;
+        }
+
+        @Override
+        public BiConsumer<MapPair, Pair> accumulator() {
+            // TODO add key and value to maps
+            return (MapPair mp, Pair p) -> {
+                mp.getKeyById().put(p.getKey().getId(), p.getKey());
+                mp.getValueById().merge(
+                        p.getValue().getKeyId(),
+                        new ArrayList<>(Arrays.asList(p.getValue())),
+                        (valuesMap1, valuesMap2) -> {
+                            valuesMap1.addAll(valuesMap2);
+                            return valuesMap1;
+                        });
+            };
+        }
+
+        @Override
+        public BinaryOperator<MapPair> combiner() {
+            // TODO use mapMerger
+            return (MapPair m1, MapPair m2) -> {
+                BinaryOperator<Map<String, Key>> keysMapper = mapMerger((k1, k2) -> k2);
+                Map<String, Key> mapOfKeys = keysMapper.apply(m1.getKeyById(), m2.getKeyById());
+
+                BinaryOperator<Map<String, List<Value>>> valuesMapper = mapMerger((values, values2) -> {
+                    values.addAll(values2);
+                    return values;
+                });
+                Map<String, List<Value>> mapOfValues = valuesMapper.apply(m1.getValueById(), m2.getValueById());
+            return new MapPair(mapOfKeys, mapOfValues);
+            };
+        }
+
+        @Override
+        public Function<MapPair, MapPair> finisher() {
+            return Function.identity();
+        }
+
+        @Override
+        public Set<Characteristics> characteristics() {
+            return Collections.unmodifiableSet(EnumSet.of(
+                    Characteristics.UNORDERED,
+                    Characteristics.IDENTITY_FINISH));
+        }
+    }
 }
