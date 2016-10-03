@@ -135,6 +135,10 @@ public class CollectorsExercise2 {
         private final Map<String, Key> keyById;
         private final Map<String, List<Value>> valueById;
 
+        public MapPair() {
+            this(new HashMap<>(), new HashMap<>());
+        }
+
         public MapPair(Map<String, Key> keyById, Map<String, List<Value>> valueById) {
             this.keyById = keyById;
             this.valueById = valueById;
@@ -152,8 +156,9 @@ public class CollectorsExercise2 {
     private static <K, V, M extends Map<K, V>>
     BinaryOperator<M> mapMerger(BinaryOperator<V> mergeFunction) {
         return (m1, m2) -> {
-            for (Map.Entry<K, V> e : m2.entrySet())
+            for (Map.Entry<K, V> e : m2.entrySet()) {
                 m1.merge(e.getKey(), e.getValue(), mergeFunction);
+            }
             return m1;
         };
     }

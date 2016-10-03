@@ -1,9 +1,9 @@
 package part3.exercise;
 
+import org.junit.Test;
 import part2.exercise.CollectorsExercise2;
 import part2.exercise.CollectorsExercise2.Key;
 import part2.exercise.CollectorsExercise2.Value;
-import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
@@ -32,8 +32,8 @@ public class CollectorCombination {
         }
     }
 
-    private static <T, R1, R2> Collector<T, Pair<?, ?>, Pair<R1, R2>> paired(Collector<T, ?, R1> c1,
-                                                                             Collector<T, ?, R2> c2) {
+    private static <T, M1, M2, R1, R2> Collector<T, Pair<M1, M2>, Pair<R1, R2>> paired(Collector<T, M1, R1> c1,
+                                                                                       Collector<T, M2, R2> c2) {
         // TODO
         throw new UnsupportedOperationException();
     }
@@ -52,7 +52,7 @@ public class CollectorCombination {
                 .collect(
                         paired(
                                 mapping(CollectorsExercise2.Pair::getKey, toMap(Key::getId, Function.identity(), (x, y) -> x)),
-                                mapping(CollectorsExercise2.Pair::getValue, groupingBy(Value::getKeyId, toList()))
+                                mapping(CollectorsExercise2.Pair::getValue, groupingBy(Value::getKeyId))
                         )
                 );
 
