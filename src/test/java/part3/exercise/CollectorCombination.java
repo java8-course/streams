@@ -5,10 +5,7 @@ import part2.exercise.CollectorsExercise2;
 import part2.exercise.CollectorsExercise2.Key;
 import part2.exercise.CollectorsExercise2.Value;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -78,7 +75,10 @@ public class CollectorCombination {
 
             @Override
             public Set<Characteristics> characteristics() {
-                return Collections.emptySet();                  // Important!
+                return EnumSet.of(Characteristics.CONCURRENT, Characteristics.IDENTITY_FINISH, Characteristics.UNORDERED).stream()
+                        .filter(c1.characteristics()::contains)
+                        .filter(c2.characteristics()::contains)
+                        .collect(toSet());
             }
         };
     }
