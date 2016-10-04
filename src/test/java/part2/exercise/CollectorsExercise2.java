@@ -206,7 +206,7 @@ public class CollectorsExercise2 {
         public BiConsumer<MapPair, Pair> accumulator() {
             return (m, p) -> {
                 final Key key = p.getKey();
-                final String sKey = key.toString();
+                final String sKey = key.getId();
                 final Value value = p.getValue();
                 final Map<String, Key> keyMap = m.getKeyById();
                 final Map<String, List<Value>> valueMap = m.getValueById();
