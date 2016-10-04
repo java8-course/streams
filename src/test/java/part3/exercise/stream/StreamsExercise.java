@@ -39,8 +39,8 @@ public class StreamsExercise {
                 .stream()
                 .flatMap(a->a.getJobHistory().stream()).collect(Collectors.toList())
                 .stream()
-                .collect(Collectors.summarizingInt(a->a.getDuration()))
-                .getSum();
+                .mapToInt(JobHistoryEntry::getDuration).
+                sum();
         assertEquals(72, sumDurations);
     }
 

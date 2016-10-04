@@ -4,6 +4,7 @@ import data.Employee;
 import data.Generator;
 import data.JobHistoryEntry;
 import data.Person;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -51,7 +52,7 @@ public class StreamsExercise1 {
     public void sumEpamDurations() {
         final List<Employee> employees = generateEmployeeList();
 
-        int expected = 0;   //Why 0?
+        int expected = 0;
 
         for (Employee e : employees) {
             for (JobHistoryEntry j : e.getJobHistory()) {
@@ -62,10 +63,12 @@ public class StreamsExercise1 {
         }
 
         int result = employees.stream()
-                .map(Employee::getJobHistory)
-                .flatMap(Collection::stream)
-                .//????????????
-                assertEquals(expected, result);
+                .flatMap(emp -> emp.getJobHistory().stream())
+                .filter(e -> e.getEmployer().equals("epam"))
+                .mapToInt(JobHistoryEntry::getDuration)
+                .sum();
+
+        Assert.assertTrue(expected==result);
     }
 
 }

@@ -52,10 +52,10 @@ public class LambdaExercise {
         assertEquals(Integer.valueOf(3), getStringLength.apply("ABC"));
 
         // TODO get person name length using getPersonName and getStringLength without andThen
-        final Function<Person, Integer> getPersonNameLength1 = person1 -> person1.getFirstName().length();
+        final Function<Person, Integer> getPersonNameLength1 = (person1) -> getStringLength.apply(getPersonName.apply(person1));
 
         // TODO get person name length using getPersonName and getStringLength with andThen
-        Function<Person,String> func = person1 -> person1.getFirstName();
+        Function<Person,String> func = person1 -> getPersonName.andThen(getStringLength);
         final Function<Person, Integer> getPersonNameLength2 = func.andThen(String::length);
 
         final Person person = new Person("John", "Galt", 30);
@@ -87,7 +87,7 @@ public class LambdaExercise {
 
         assertEquals("John", getPersonName.apply(person));
 
-        final Predicate<String> isJohnString = (a) -> a.equals("John"); // TODO using method reference check that "John" equals string parameter
+        final Predicate<String> isJohnString = "John"::equals; // TODO using method reference check that "John" equals string parameter
 
         final Predicate<Person> isJohnPerson = combine(getPersonName, isJohnString);
 

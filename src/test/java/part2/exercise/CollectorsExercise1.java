@@ -92,8 +92,7 @@ public class CollectorsExercise1 {
                 .stream()
                 .collect(toMap(Map.Entry::getKey, entry -> entry.getValue().getPerson()));
 
-        return firstOptionMap.equals(secondOptionMap)?
-                firstOptionMap:null;
+        return secondOptionMap;
     }
 
     @Test
@@ -106,16 +105,21 @@ public class CollectorsExercise1 {
     // With the longest sum duration on this position
     // { John Doe, [{dev, google, 4}, {dev, epam, 4}] } предпочтительнее, чем { A B, [{dev, google, 6}, {QA, epam, 100}]}
     private Map<String, Person> getCoolestByPosition2(List<Employee> employees) {
-        employees
-                .stream()
-                .parallel()
-                .flatMap(emp -> emp.getJobHistory()
-                        .stream()
+        return employees.stream()
+                .flatMap(employee -> employee.getJobHistory().stream()
                         .collect(groupingBy(JobHistoryEntry::getPosition, summingInt(JobHistoryEntry::getDuration)))
                         .entrySet()
-                        .stream().map(entry -> new PersonPositionDuration(emp.getPerson(), entry.getKey(), entry.getValue()))//TODO brain is damaged... need some time for reabilitation
-                        .collect(groupingBy(
-                        )));
+                        .stream()
+                        .map(entry -> new PersonPositionDuration(employee.getPerson(), entry.getKey(), entry.getValue())))
+                .collect(
+                        groupingBy(
+                                PersonPositionDuration::getPosition,
+                                collectingAndThen(
+                                        maxBy(Comparator.comparing(PersonPositionDuration::getDuration)),
+                                        p -> p.get().getPerson()
+                                )
+                        )
+                );
     }
 
     private List<Employee> getEmployees() {
