@@ -7,7 +7,6 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
@@ -73,7 +72,7 @@ public class StreamsExercise {
                 .flatMap(employee -> employee.getJobHistory().stream()
                         .map(jobHistoryEntry -> new PersonEmployer(employee.getPerson(), jobHistoryEntry.getEmployer())))
                 .collect(groupingBy(PersonEmployer::getEmployer,
-                        mapping(Function.identity(), toList())));
+                        toList()));
 
         assertEquals(11, index.get("epam").size());
     }
