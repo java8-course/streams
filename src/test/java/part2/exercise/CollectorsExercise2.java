@@ -167,7 +167,15 @@ public class CollectorsExercise2 {
     public void collectKeyValueMap() {
         final List<Pair> pairs = generatePairs(10, 100);
 
+        //1 способ : for
+//        final Map<String, List<Value>> valuesMap = new HashMap<>();
+//        for (Pair p: pairs) {
+//            if (p.)
+//
+//        }
+
         // В два прохода
+        // без конструкторов
         // final Map<String, Key> keyMap1 = pairs.stream()...
 
         // final Map<String, List<Value>> valuesMap1 = pairs.stream()...
@@ -186,12 +194,14 @@ public class CollectorsExercise2 {
 
                     @Override
                     public BiConsumer<MapPair, Pair> accumulator() {
+                        // два независимых действия
                         // TODO add key and value to maps
                         throw new UnsupportedOperationException();
                     }
 
                     @Override
                     public BinaryOperator<MapPair> combiner() {
+                        // два независимых действия
                         // TODO use mapMerger
                         throw new UnsupportedOperationException();
                     }
@@ -215,7 +225,7 @@ public class CollectorsExercise2 {
         // final Map<Key, List<Value>> keyValuesMap2 = valueMap2.entrySet().stream()...
 
         // Получение результата сразу:
-
+        // опционально
         final SubResult res3 = pairs.stream()
                 .collect(new Collector<Pair, SubResult, SubResult>() {
                     @Override
