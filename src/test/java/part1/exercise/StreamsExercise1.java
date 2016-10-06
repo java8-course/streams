@@ -51,10 +51,10 @@ public class StreamsExercise1 {
 
         List<Person> expected = new ArrayList<>();
         for (Employee e : employees) {
-            if (e.getJobHistory().isEmpty()) continue;
-            if (e.getJobHistory().get(0).getEmployer().equals("epam"))
-            {
-                expected.add(e.getPerson());
+            if (!e.getJobHistory().isEmpty()) {
+                if (e.getJobHistory().get(0).getEmployer().equals("epam")) {
+                    expected.add(e.getPerson());
+                }
             }
         }
 
