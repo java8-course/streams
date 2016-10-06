@@ -3,6 +3,7 @@ package part2.exercise;
 import data.Employee;
 import data.JobHistoryEntry;
 import data.Person;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
@@ -14,30 +15,27 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
+import static org.hamcrest.core.Is.is;
 
 public class CollectorsExercise1 {
 
     @Test
     public void getTheCoolestOne() {
         final Map<String, Person> coolestByPosition = getCoolestByPosition(getEmployees());
-        coolestByPosition.forEach((position, person) -> System.out.println(position + " -> " + person));
-        System.out.println();
+        Assert.assertThat(coolestByPosition.get("dev"), is(new Person("John", "Galt", 23)));
     }
 
     @Test
     public void getTheCoolestOne2() {
         final Map<String, Person> coolestByPosition = getCoolestByPosition2(getEmployees());
-        coolestByPosition.forEach((position, person) -> System.out.println(position + " -> " + person));
-        System.out.println();
+        Assert.assertThat(coolestByPosition.get("dev"), is(new Person("John", "Galt", 23)));
 
     }
 
     @Test
     public void getTheCoolestOne3() {
         final Map<String, Person> coolestByPosition = getCoolestByPosition3(getEmployees());
-        coolestByPosition.forEach((position, person) -> System.out.println(position + " -> " + person));
-        System.out.println();
-
+        Assert.assertThat(coolestByPosition.get("dev"), is(new Person("John", "Galt", 23)));
     }
 
     private static class PersonPositionDuration {
@@ -72,7 +70,11 @@ public class CollectorsExercise1 {
         // Collectors.groupingBy
         return employees.stream()
                 .flatMap(employee -> employee.getJobHistory().stream()
-                        .map(j -> new PersonPositionDuration(employee.getPerson(), j.getPosition(), j.getDuration())))
+                        .collect(groupingBy(
+                                JobHistoryEntry::getPosition,
+                                summingInt(JobHistoryEntry::getDuration)))
+                        .entrySet().stream()
+                        .map(esd -> new PersonPositionDuration(employee.getPerson(), esd.getKey(), esd.getValue())))
                 .collect(groupingBy(
                         PersonPositionDuration::getPosition,
                         collectingAndThen(
@@ -88,7 +90,11 @@ public class CollectorsExercise1 {
         // iterate twice: stream...collect(...).stream()...
         return employees.stream()
                 .flatMap(employee -> employee.getJobHistory().stream()
-                        .map(j -> new PersonPositionDuration(employee.getPerson(), j.getPosition(), j.getDuration())))
+                        .collect(toMap(JobHistoryEntry::getPosition,
+                                JobHistoryEntry::getDuration,
+                                (integer, integer2) -> integer + integer2))
+                        .entrySet().stream()
+                        .map(pde -> new PersonPositionDuration(employee.getPerson(), pde.getKey(), pde.getValue())))
                 .collect(toMap(PersonPositionDuration::getPosition,
                         Function.identity(),
                         BinaryOperator.maxBy(Comparator.comparing(PersonPositionDuration::getDuration))))
@@ -97,7 +103,6 @@ public class CollectorsExercise1 {
     }
 
     private Map<String, Person> getCoolestByPosition3(List<Employee> employees) {
-        // TODO
         // написать свой коллектор
         Collector<Employee, Map<String, PersonPositionDuration>, Map<String, Person>> EmployeeToMapCollector = new Collector<Employee, Map<String, PersonPositionDuration>, Map<String, Person>>() {
             @Override
@@ -107,22 +112,23 @@ public class CollectorsExercise1 {
 
             @Override
             public BiConsumer<Map<String, PersonPositionDuration>, Employee> accumulator() {
-                return (accum, element) ->
-                        element.getJobHistory().stream()
-                                .map(j -> new PersonPositionDuration(element.getPerson(), j.getPosition(), j.getDuration()))
-                                .filter(ppd ->
-                                        !accum.containsKey(ppd.getPosition())
-                                                || accum.get(ppd.getPosition()).getDuration() < ppd.getDuration() )
-                                .forEach(ppd -> accum.put(ppd.getPosition(), ppd));
+                return (accum, element) -> element.getJobHistory().stream()
+                        .collect(toMap (JobHistoryEntry::getPosition,
+                                        JobHistoryEntry::getDuration,
+                                        (integer, integer2) -> integer + integer2))
+                        .entrySet().stream()
+                        .filter(positionDurationEntry -> !accum.containsKey(positionDurationEntry.getKey())
+                                || accum.get(positionDurationEntry.getKey()).getDuration() < positionDurationEntry.getValue())
+                        .map(pde -> new PersonPositionDuration(element.getPerson(), pde.getKey(), pde.getValue()))
+                        .forEach(ppd -> accum.put(ppd.getPosition(), ppd));
             }
 
             @Override
             public BinaryOperator<Map<String, PersonPositionDuration>> combiner() {
                 return (accum1, accum2) -> {
                     accum2.values().stream()
-                            .filter(ppd ->
-                                    !accum1.containsKey(ppd.getPosition())
-                                            || accum1.get(ppd.getPosition()).getDuration() < ppd.getDuration() )
+                            .filter(ppd -> !accum1.containsKey(ppd.getPosition())
+                                    || accum1.get(ppd.getPosition()).getDuration() < ppd.getDuration())
                             .forEach(ppd -> accum1.put(ppd.getPosition(), ppd));
                     return accum1;
                 };
@@ -170,7 +176,7 @@ public class CollectorsExercise1 {
                         new Person("John", "Galt", 23),
                         Arrays.asList(
                                 new JobHistoryEntry(3, "dev", "epam"),
-                                new JobHistoryEntry(2, "dev", "google")
+                                new JobHistoryEntry(4, "dev", "google")
                         )),
                 new Employee(
                         new Person("John", "Doe", 24),
