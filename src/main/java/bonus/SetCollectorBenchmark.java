@@ -15,16 +15,19 @@ import java.util.stream.IntStream;
 //@Measurement(iterations = 20, time = 1, timeUnit = TimeUnit.MINUTES)
 @State(Scope.Thread)
 public class SetCollectorBenchmark {
-    private final Integer[] millionInts = IntStream.generate(() -> ThreadLocalRandom.current().nextInt(1_000_000)).limit(1_000_000)
-            .boxed().toArray(Integer[]::new);
+    private final String[] millionInts = IntStream.generate(() -> ThreadLocalRandom.current().nextInt(1_000_000))
+            .limit(1_000_000)
+            .boxed()
+            .map(Object::toString)
+            .toArray(String[]::new);
 
     @Benchmark
-    public Set<Integer> collectSet() {
+    public Set<String> collectSet() {
         return Arrays.stream(millionInts).collect(new CollectorToSet<>());
     }
 
     @Benchmark
-    public Set<Integer> collectConcurrentSet() {
+    public Set<String> collectConcurrentSet() {
         return Arrays.stream(millionInts).collect(new ConcurrentCollectorToSet<>());
     }
 

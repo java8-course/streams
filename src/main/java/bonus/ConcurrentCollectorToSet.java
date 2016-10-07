@@ -23,7 +23,7 @@ public class ConcurrentCollectorToSet<T> implements Collector<T, Map<T, Object>,
 
     @Override
     public BiConsumer<Map<T, Object>, T> accumulator() {
-        return (ts, t) -> globalCollector.put(t, null);
+        return (ts, t) -> globalCollector.put(t, "");
     }
 
     @Override

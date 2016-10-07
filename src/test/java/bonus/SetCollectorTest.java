@@ -12,8 +12,8 @@ public class SetCollectorTest {
 
     @Test
     public void testSetCollection() {
-        final Set<Integer> set1 = scb.collectSet();
-        final Set<Integer> set2 = scb.collectConcurrentSet();
+        final Set<String> set1 = scb.collectSet();
+        final Set<String> set2 = scb.collectConcurrentSet();
         assertThat(set1, is(set2));
     }
 
