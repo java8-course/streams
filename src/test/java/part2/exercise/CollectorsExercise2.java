@@ -148,13 +148,13 @@ public class CollectorsExercise2 {
 
     private static class MapPair {
         private final Map<String, Key> keyById;
-        private final Map<String, List<Value>> valueById;
+        private final Map<String, Set<Value>> valueById;
 
         public MapPair() {
             this(new HashMap<>(), new HashMap<>());
         }
 
-        public MapPair(Map<String, Key> keyById, Map<String, List<Value>> valueById) {
+        public MapPair(Map<String, Key> keyById, Map<String, Set<Value>> valueById) {
             this.keyById = keyById;
             this.valueById = valueById;
         }
@@ -163,7 +163,7 @@ public class CollectorsExercise2 {
             return keyById;
         }
 
-        public Map<String, List<Value>> getValueById() {
+        public Map<String, Set<Value>> getValueById() {
             return valueById;
         }
     }
@@ -194,7 +194,7 @@ public class CollectorsExercise2 {
         // В два прохода
         // без конструкторов
          final Map<String, Key> keyMap1 = pairs.stream()
-                 .collect(toMap(p -> p.getKey().getId(), p -> p.getKey(), (u, u2) -> u));
+                 .collect(toMap(p -> p.getKey().getId(), Pair::getKey, (u, u2) -> u));
 
         Map<String, Set<Value>> valuesMap1 = pairs.stream()
                 .collect(groupingBy(p -> p.getValue().getKeyId(),
@@ -203,33 +203,49 @@ public class CollectorsExercise2 {
         // В каждом Map.Entry id ключа должно совпадать с keyId для каждого значения в списке
         final Map<Key, Set<Value>> resultMap1 = valuesMap1.entrySet().stream()
                 .collect(toMap(entry -> keyMap1.get(entry.getKey()),
-                        entry -> entry.getValue()));
+                        Map.Entry::getValue));
 
         Assert.assertThat(resultMap1, is(resultMap0));
 
 
         // 2 способ
         // В 1 проход в 2 Map с использованием MapPair и mapMerger
-        final MapPair res2 = pairs.stream()
+        final MapPair mapPairResult =
+                pairs.stream()
                 .collect(new Collector<Pair, MapPair, MapPair>() {
                     @Override
                     public Supplier<MapPair> supplier() {
-                        // TODO
-                        throw new UnsupportedOperationException();
+                        return MapPair::new;
                     }
 
                     @Override
                     public BiConsumer<MapPair, Pair> accumulator() {
-                        // два независимых действия
-                        // TODO add key and value to maps
-                        throw new UnsupportedOperationException();
+                        return (mapPair, pair) -> {
+                            mapPair.getKeyById().putIfAbsent(pair.getKey().getId(), pair.getKey());
+
+                            if (mapPair.getValueById().containsKey(pair.getValue().getKeyId())) {
+                                mapPair.getValueById().get(pair.getValue().getKeyId()).add(pair.getValue());
+                            } else {
+                                mapPair.getValueById().put(pair.getValue().getKeyId(), new HashSet<>(Collections.singletonList(pair.getValue())));
+                            }
+                        };
                     }
 
                     @Override
                     public BinaryOperator<MapPair> combiner() {
-                        // два независимых действия
-                        // TODO use mapMerger
-                        throw new UnsupportedOperationException();
+                        return (mapPair, mapPair2) -> {
+
+                            final Map<String, Key> keyMap = CollectorsExercise2.<String, Key, Map<String, Key>> mapMerger((k1, k2) -> k1)
+                                    .apply(mapPair.getKeyById(), mapPair2.getKeyById());
+
+                            final Map<String, Set<Value>> valuesMap =
+                                    CollectorsExercise2.<String, Set<Value>, Map<String, Set<Value>>>mapMerger((s, s2) -> {
+                                        s.addAll(s2);
+                                        return s;
+                                    })
+                                    .apply(mapPair.getValueById(), mapPair2.getValueById());
+                            return new MapPair(keyMap, valuesMap);
+                        };
                     }
 
                     @Override
@@ -245,10 +261,15 @@ public class CollectorsExercise2 {
                     }
                 });
 
-        final Map<String, Key> keyMap2 = res2.getKeyById();
-        final Map<String, List<Value>> valuesMap2 = res2.getValueById();
+        final Map<String, Key> keyMap2 = mapPairResult.getKeyById();
+        final Map<String, Set<Value>> valuesMap2 = mapPairResult.getValueById();
 
-        // final Map<Key, List<Value>> keyValuesMap2 = valueMap2.entrySet().stream()...
+
+        final Map<Key, Set<Value>> resultMap2 = keyMap2.entrySet().stream()
+                .collect(toMap(Map.Entry::getValue,
+                        entry -> valuesMap2.get(entry.getKey())));
+
+        Assert.assertThat(resultMap2, is(resultMap0));
 
         // 3 способ
 //        // Получение результата сразу:
