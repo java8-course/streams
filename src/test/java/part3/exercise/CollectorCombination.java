@@ -32,8 +32,8 @@ public class CollectorCombination {
         }
     }
 
-    private static <T, R1, R2> Collector<T, Pair<?, ?>, Pair<R1, R2>> paired(Collector<T, ?, R1> c1,
-                                                                             Collector<T, ?, R2> c2) {
+    private static <T, M1, M2, R1, R2> Collector<T, Pair<M1, M2>, Pair<R1, R2>> paired(Collector<T, ?, R1> c1,
+                                                                                       Collector<T, ?, R2> c2) {
         // TODO
         throw new UnsupportedOperationException();
     }
