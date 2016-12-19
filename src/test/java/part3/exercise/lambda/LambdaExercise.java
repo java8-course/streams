@@ -66,6 +66,7 @@ public class LambdaExercise {
         return pf.create("John", "Galt", 66);
     }
 
+    // ((T -> R), (R -> boolean)) -> (T -> boolean)
     private <T, R> Predicate<T> combine(Function<T, R> f, Predicate<R> p) {
         // TODO
         throw new UnsupportedOperationException();

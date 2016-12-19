@@ -18,12 +18,6 @@ public class StreamsExample {
 
     // https://github.com/java8-course/streams
 
-    private static Stream<PersonPositionPair> employeeToPairs(Employee employee) {
-        return employee.getJobHistory().stream()
-                .map(JobHistoryEntry::getPosition)
-                .map(p -> new PersonPositionPair(employee.getPerson(), p));
-    }
-
     // StreamsExercise1
 
     @Test
@@ -119,6 +113,12 @@ public class StreamsExample {
         }
 
         positionIndex.get("BA").forEach(System.out::println);
+    }
+
+    private static Stream<PersonPositionPair> employeeToPairs(Employee employee) {
+        return employee.getJobHistory().stream()
+                .map(JobHistoryEntry::getPosition)
+                .map(p -> new PersonPositionPair(employee.getPerson(), p));
     }
 
     // [ (John, [dev, QA]), (Bob, [QA, QA])] -> [dev -> [John], QA -> [John, Bob]]
