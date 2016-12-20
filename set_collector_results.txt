@@ -1,0 +1,399 @@
+# JMH 1.12 (released 189 days ago, please consider updating!)
+# VM version: JDK 1.8.0_91, VM 25.91-b14
+# VM invoker: D:\JAVA\JDK\jre\bin\java.exe
+# VM options: <none>
+# Warmup: 5 iterations, 3 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: bonus.SetCollectorBenchmark.collectConcurrentSet
+# Parameters: (collectionSize = 1000)
+
+# Run progress: 0,00% complete, ETA 00:13:00
+# Fork: 1 of 1
+# Warmup Iteration   1: 0,088 ms/op
+# Warmup Iteration   2: 0,081 ms/op
+# Warmup Iteration   3: 0,080 ms/op
+# Warmup Iteration   4: 0,081 ms/op
+# Warmup Iteration   5: 0,081 ms/op
+Iteration   1: 0,079 ms/op
+Iteration   2: 0,078 ms/op
+Iteration   3: 0,072 ms/op
+Iteration   4: 0,071 ms/op
+Iteration   5: 0,072 ms/op
+
+
+Result "collectConcurrentSet":
+  0,074 ±(99.9%) 0,015 ms/op [Average]
+  (min, avg, max) = (0,071, 0,074, 0,079), stdev = 0,004
+  CI (99.9%): [0,060, 0,089] (assumes normal distribution)
+
+
+# JMH 1.12 (released 189 days ago, please consider updating!)
+# VM version: JDK 1.8.0_91, VM 25.91-b14
+# VM invoker: D:\JAVA\JDK\jre\bin\java.exe
+# VM options: <none>
+# Warmup: 5 iterations, 3 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: bonus.SetCollectorBenchmark.collectConcurrentSet
+# Parameters: (collectionSize = 10000)
+
+# Run progress: 8,33% complete, ETA 00:11:58
+# Fork: 1 of 1
+# Warmup Iteration   1: 0,775 ms/op
+# Warmup Iteration   2: 0,697 ms/op
+# Warmup Iteration   3: 0,704 ms/op
+# Warmup Iteration   4: 0,704 ms/op
+# Warmup Iteration   5: 0,713 ms/op
+Iteration   1: 0,706 ms/op
+Iteration   2: 0,703 ms/op
+Iteration   3: 0,717 ms/op
+Iteration   4: 0,708 ms/op
+Iteration   5: 0,724 ms/op
+
+
+Result "collectConcurrentSet":
+  0,712 ±(99.9%) 0,034 ms/op [Average]
+  (min, avg, max) = (0,703, 0,712, 0,724), stdev = 0,009
+  CI (99.9%): [0,678, 0,745] (assumes normal distribution)
+
+
+# JMH 1.12 (released 189 days ago, please consider updating!)
+# VM version: JDK 1.8.0_91, VM 25.91-b14
+# VM invoker: D:\JAVA\JDK\jre\bin\java.exe
+# VM options: <none>
+# Warmup: 5 iterations, 3 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: bonus.SetCollectorBenchmark.collectConcurrentSet
+# Parameters: (collectionSize = 100000)
+
+# Run progress: 16,67% complete, ETA 00:10:53
+# Fork: 1 of 1
+# Warmup Iteration   1: 6,845 ms/op
+# Warmup Iteration   2: 6,037 ms/op
+# Warmup Iteration   3: 6,177 ms/op
+# Warmup Iteration   4: 6,157 ms/op
+# Warmup Iteration   5: 6,174 ms/op
+Iteration   1: 6,128 ms/op
+Iteration   2: 6,117 ms/op
+Iteration   3: 5,986 ms/op
+Iteration   4: 5,987 ms/op
+Iteration   5: 5,988 ms/op
+
+
+Result "collectConcurrentSet":
+  6,041 ±(99.9%) 0,286 ms/op [Average]
+  (min, avg, max) = (5,986, 6,041, 6,128), stdev = 0,074
+  CI (99.9%): [5,755, 6,327] (assumes normal distribution)
+
+
+# JMH 1.12 (released 189 days ago, please consider updating!)
+# VM version: JDK 1.8.0_91, VM 25.91-b14
+# VM invoker: D:\JAVA\JDK\jre\bin\java.exe
+# VM options: <none>
+# Warmup: 5 iterations, 3 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: bonus.SetCollectorBenchmark.collectConcurrentSet
+# Parameters: (collectionSize = 1000000)
+
+# Run progress: 25,00% complete, ETA 00:09:48
+# Fork: 1 of 1
+# Warmup Iteration   1: 116,095 ms/op
+# Warmup Iteration   2: 77,241 ms/op
+# Warmup Iteration   3: 74,441 ms/op
+# Warmup Iteration   4: 73,379 ms/op
+# Warmup Iteration   5: 73,404 ms/op
+Iteration   1: 71,369 ms/op
+Iteration   2: 71,879 ms/op
+Iteration   3: 71,490 ms/op
+Iteration   4: 71,438 ms/op
+Iteration   5: 71,556 ms/op
+
+
+Result "collectConcurrentSet":
+  71,546 ±(99.9%) 0,763 ms/op [Average]
+  (min, avg, max) = (71,369, 71,546, 71,879), stdev = 0,198
+  CI (99.9%): [70,783, 72,310] (assumes normal distribution)
+
+
+# JMH 1.12 (released 189 days ago, please consider updating!)
+# VM version: JDK 1.8.0_91, VM 25.91-b14
+# VM invoker: D:\JAVA\JDK\jre\bin\java.exe
+# VM options: <none>
+# Warmup: 5 iterations, 3 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: bonus.SetCollectorBenchmark.collectConcurrentSetSingleAccum
+# Parameters: (collectionSize = 1000)
+
+# Run progress: 33,33% complete, ETA 00:08:43
+# Fork: 1 of 1
+# Warmup Iteration   1: 0,073 ms/op
+# Warmup Iteration   2: 0,068 ms/op
+# Warmup Iteration   3: 0,069 ms/op
+# Warmup Iteration   4: 0,069 ms/op
+# Warmup Iteration   5: 0,069 ms/op
+Iteration   1: 0,069 ms/op
+Iteration   2: 0,069 ms/op
+Iteration   3: 0,070 ms/op
+Iteration   4: 0,070 ms/op
+Iteration   5: 0,072 ms/op
+
+
+Result "collectConcurrentSetSingleAccum":
+  0,070 ±(99.9%) 0,005 ms/op [Average]
+  (min, avg, max) = (0,069, 0,070, 0,072), stdev = 0,001
+  CI (99.9%): [0,065, 0,075] (assumes normal distribution)
+
+
+# JMH 1.12 (released 189 days ago, please consider updating!)
+# VM version: JDK 1.8.0_91, VM 25.91-b14
+# VM invoker: D:\JAVA\JDK\jre\bin\java.exe
+# VM options: <none>
+# Warmup: 5 iterations, 3 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: bonus.SetCollectorBenchmark.collectConcurrentSetSingleAccum
+# Parameters: (collectionSize = 10000)
+
+# Run progress: 41,67% complete, ETA 00:07:38
+# Fork: 1 of 1
+# Warmup Iteration   1: 0,761 ms/op
+# Warmup Iteration   2: 0,690 ms/op
+# Warmup Iteration   3: 0,679 ms/op
+# Warmup Iteration   4: 0,689 ms/op
+# Warmup Iteration   5: 0,709 ms/op
+Iteration   1: 0,765 ms/op
+Iteration   2: 0,701 ms/op
+Iteration   3: 0,721 ms/op
+Iteration   4: 0,723 ms/op
+Iteration   5: 0,706 ms/op
+
+
+Result "collectConcurrentSetSingleAccum":
+  0,723 ±(99.9%) 0,098 ms/op [Average]
+  (min, avg, max) = (0,701, 0,723, 0,765), stdev = 0,025
+  CI (99.9%): [0,625, 0,821] (assumes normal distribution)
+
+
+# JMH 1.12 (released 189 days ago, please consider updating!)
+# VM version: JDK 1.8.0_91, VM 25.91-b14
+# VM invoker: D:\JAVA\JDK\jre\bin\java.exe
+# VM options: <none>
+# Warmup: 5 iterations, 3 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: bonus.SetCollectorBenchmark.collectConcurrentSetSingleAccum
+# Parameters: (collectionSize = 100000)
+
+# Run progress: 50,00% complete, ETA 00:06:32
+# Fork: 1 of 1
+# Warmup Iteration   1: 6,737 ms/op
+# Warmup Iteration   2: 6,250 ms/op
+# Warmup Iteration   3: 6,385 ms/op
+# Warmup Iteration   4: 6,323 ms/op
+# Warmup Iteration   5: 6,213 ms/op
+Iteration   1: 6,249 ms/op
+Iteration   2: 6,166 ms/op
+Iteration   3: 6,237 ms/op
+Iteration   4: 6,114 ms/op
+Iteration   5: 6,082 ms/op
+
+
+Result "collectConcurrentSetSingleAccum":
+  6,170 ±(99.9%) 0,282 ms/op [Average]
+  (min, avg, max) = (6,082, 6,170, 6,249), stdev = 0,073
+  CI (99.9%): [5,888, 6,451] (assumes normal distribution)
+
+
+# JMH 1.12 (released 189 days ago, please consider updating!)
+# VM version: JDK 1.8.0_91, VM 25.91-b14
+# VM invoker: D:\JAVA\JDK\jre\bin\java.exe
+# VM options: <none>
+# Warmup: 5 iterations, 3 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: bonus.SetCollectorBenchmark.collectConcurrentSetSingleAccum
+# Parameters: (collectionSize = 1000000)
+
+# Run progress: 58,33% complete, ETA 00:05:27
+# Fork: 1 of 1
+# Warmup Iteration   1: 107,671 ms/op
+# Warmup Iteration   2: 80,211 ms/op
+# Warmup Iteration   3: 73,814 ms/op
+# Warmup Iteration   4: 76,104 ms/op
+# Warmup Iteration   5: 72,033 ms/op
+Iteration   1: 73,318 ms/op
+Iteration   2: 73,056 ms/op
+Iteration   3: 75,520 ms/op
+Iteration   4: 72,396 ms/op
+Iteration   5: 72,441 ms/op
+
+
+Result "collectConcurrentSetSingleAccum":
+  73,346 ±(99.9%) 4,920 ms/op [Average]
+  (min, avg, max) = (72,396, 73,346, 75,520), stdev = 1,278
+  CI (99.9%): [68,426, 78,267] (assumes normal distribution)
+
+
+# JMH 1.12 (released 189 days ago, please consider updating!)
+# VM version: JDK 1.8.0_91, VM 25.91-b14
+# VM invoker: D:\JAVA\JDK\jre\bin\java.exe
+# VM options: <none>
+# Warmup: 5 iterations, 3 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: bonus.SetCollectorBenchmark.collectNonConcurrentSet
+# Parameters: (collectionSize = 1000)
+
+# Run progress: 66,67% complete, ETA 00:04:21
+# Fork: 1 of 1
+# Warmup Iteration   1: 0,065 ms/op
+# Warmup Iteration   2: 0,063 ms/op
+# Warmup Iteration   3: 0,063 ms/op
+# Warmup Iteration   4: 0,063 ms/op
+# Warmup Iteration   5: 0,063 ms/op
+Iteration   1: 0,059 ms/op
+Iteration   2: 0,057 ms/op
+Iteration   3: 0,057 ms/op
+Iteration   4: 0,057 ms/op
+Iteration   5: 0,057 ms/op
+
+
+Result "collectNonConcurrentSet":
+  0,057 ±(99.9%) 0,003 ms/op [Average]
+  (min, avg, max) = (0,057, 0,057, 0,059), stdev = 0,001
+  CI (99.9%): [0,055, 0,060] (assumes normal distribution)
+
+
+# JMH 1.12 (released 189 days ago, please consider updating!)
+# VM version: JDK 1.8.0_91, VM 25.91-b14
+# VM invoker: D:\JAVA\JDK\jre\bin\java.exe
+# VM options: <none>
+# Warmup: 5 iterations, 3 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: bonus.SetCollectorBenchmark.collectNonConcurrentSet
+# Parameters: (collectionSize = 10000)
+
+# Run progress: 75,00% complete, ETA 00:03:16
+# Fork: 1 of 1
+# Warmup Iteration   1: 0,622 ms/op
+# Warmup Iteration   2: 0,595 ms/op
+# Warmup Iteration   3: 0,599 ms/op
+# Warmup Iteration   4: 0,598 ms/op
+# Warmup Iteration   5: 0,598 ms/op
+Iteration   1: 0,598 ms/op
+Iteration   2: 0,599 ms/op
+Iteration   3: 0,596 ms/op
+Iteration   4: 0,597 ms/op
+Iteration   5: 0,598 ms/op
+
+
+Result "collectNonConcurrentSet":
+  0,598 ±(99.9%) 0,004 ms/op [Average]
+  (min, avg, max) = (0,596, 0,598, 0,599), stdev = 0,001
+  CI (99.9%): [0,593, 0,602] (assumes normal distribution)
+
+
+# JMH 1.12 (released 189 days ago, please consider updating!)
+# VM version: JDK 1.8.0_91, VM 25.91-b14
+# VM invoker: D:\JAVA\JDK\jre\bin\java.exe
+# VM options: <none>
+# Warmup: 5 iterations, 3 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: bonus.SetCollectorBenchmark.collectNonConcurrentSet
+# Parameters: (collectionSize = 100000)
+
+# Run progress: 83,33% complete, ETA 00:02:10
+# Fork: 1 of 1
+# Warmup Iteration   1: 13,891 ms/op
+# Warmup Iteration   2: 12,527 ms/op
+# Warmup Iteration   3: 12,264 ms/op
+# Warmup Iteration   4: 12,218 ms/op
+# Warmup Iteration   5: 12,314 ms/op
+Iteration   1: 12,292 ms/op
+Iteration   2: 12,471 ms/op
+Iteration   3: 12,314 ms/op
+Iteration   4: 12,007 ms/op
+Iteration   5: 12,085 ms/op
+
+
+Result "collectNonConcurrentSet":
+  12,234 ±(99.9%) 0,720 ms/op [Average]
+  (min, avg, max) = (12,007, 12,234, 12,471), stdev = 0,187
+  CI (99.9%): [11,514, 12,954] (assumes normal distribution)
+
+
+# JMH 1.12 (released 189 days ago, please consider updating!)
+# VM version: JDK 1.8.0_91, VM 25.91-b14
+# VM invoker: D:\JAVA\JDK\jre\bin\java.exe
+# VM options: <none>
+# Warmup: 5 iterations, 3 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: bonus.SetCollectorBenchmark.collectNonConcurrentSet
+# Parameters: (collectionSize = 1000000)
+
+# Run progress: 91,67% complete, ETA 00:01:05
+# Fork: 1 of 1
+# Warmup Iteration   1: 378,356 ms/op
+# Warmup Iteration   2: 243,517 ms/op
+# Warmup Iteration   3: 232,850 ms/op
+# Warmup Iteration   4: 223,335 ms/op
+# Warmup Iteration   5: 220,047 ms/op
+Iteration   1: 219,521 ms/op
+Iteration   2: 218,177 ms/op
+Iteration   3: 216,190 ms/op
+Iteration   4: 212,431 ms/op
+Iteration   5: 215,977 ms/op
+
+
+Result "collectNonConcurrentSet":
+  216,459 ±(99.9%) 10,343 ms/op [Average]
+  (min, avg, max) = (212,431, 216,459, 219,521), stdev = 2,686
+  CI (99.9%): [206,116, 226,802] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:13:06
+
+Benchmark                                              (collectionSize)  Mode  Cnt    Score    Error  Units
+SetCollectorBenchmark.collectConcurrentSet                         1000  avgt    5    0,074 ±  0,015  ms/op
+SetCollectorBenchmark.collectConcurrentSet                        10000  avgt    5    0,712 ±  0,034  ms/op
+SetCollectorBenchmark.collectConcurrentSet                       100000  avgt    5    6,041 ±  0,286  ms/op
+SetCollectorBenchmark.collectConcurrentSet                      1000000  avgt    5   71,546 ±  0,763  ms/op
+SetCollectorBenchmark.collectConcurrentSetSingleAccum              1000  avgt    5    0,070 ±  0,005  ms/op
+SetCollectorBenchmark.collectConcurrentSetSingleAccum             10000  avgt    5    0,723 ±  0,098  ms/op
+SetCollectorBenchmark.collectConcurrentSetSingleAccum            100000  avgt    5    6,170 ±  0,282  ms/op
+SetCollectorBenchmark.collectConcurrentSetSingleAccum           1000000  avgt    5   73,346 ±  4,920  ms/op
+SetCollectorBenchmark.collectNonConcurrentSet                      1000  avgt    5    0,057 ±  0,003  ms/op
+SetCollectorBenchmark.collectNonConcurrentSet                     10000  avgt    5    0,598 ±  0,004  ms/op
+SetCollectorBenchmark.collectNonConcurrentSet                    100000  avgt    5   12,234 ±  0,720  ms/op
+SetCollectorBenchmark.collectNonConcurrentSet                   1000000  avgt    5  216,459 ± 10,343  ms/op
