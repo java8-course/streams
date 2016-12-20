@@ -12,6 +12,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static data.Generator.generateEmployeeList;
+import static org.junit.Assert.*;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
@@ -25,14 +26,30 @@ public class StreamsExercise1 {
 
     @Test
     public void getAllEpamEmployees() {
-        List<Person> epamEmployees = null;// TODO all persons with experience in epam
-        throw new UnsupportedOperationException();
+        List<Person> epamEmployees = generateEmployeeList()
+                .stream()
+                .filter(StreamsExercise1::hasEpamExp)
+                .map(Employee::getPerson)
+                .collect(Collectors.toList());
+        System.out.println(epamEmployees);
+    }
+
+    public static boolean hasEpamExp(Employee e) {
+        return e.getJobHistory().stream()
+                .anyMatch(entry -> entry.getEmployer().equals("epam"));
     }
 
     @Test
     public void getEmployeesStartedFromEpam() {
-        List<Person> epamEmployees = null;// TODO all persons with first experience in epam
-        throw new UnsupportedOperationException();
+        List<Person> epamEmployees = generateEmployeeList()
+                .stream()
+                .filter(employee -> employee.getJobHistory().stream()
+                        .findFirst()
+                        .filter(entry -> entry.getEmployer().equals("epam"))
+                        .isPresent())
+                .map(Employee::getPerson)
+                .collect(Collectors.toList());
+        System.out.println(epamEmployees);
     }
 
     @Test
@@ -49,11 +66,12 @@ public class StreamsExercise1 {
             }
         }
 
-        // TODO
-        throw new UnsupportedOperationException();
+        int result = employees.stream()
+                .flatMap(employee -> employee.getJobHistory().stream())
+                .filter(entry -> entry.getEmployer().equals("epam"))
+                .mapToInt(JobHistoryEntry::getDuration)
+                .sum();
 
-        // int result = ???
-        // assertEquals(expected, result);
+        assertEquals(expected, result);
     }
-
 }

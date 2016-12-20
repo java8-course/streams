@@ -32,7 +32,7 @@ public class StreamsExample {
                         .distinct()
                         .collect(toList());
 
-        assertEquals(Collections.singletonList("Galt"), johnsLastNames);
+        assertEquals(Arrays.asList("Galt", "Doe", "White"), johnsLastNames);
     }
 
     /**
