@@ -4,11 +4,10 @@ import data.Employee;
 import data.JobHistoryEntry;
 import data.Person;
 import org.junit.Test;
+import part1.example.StreamsExample;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static data.Generator.generateEmployeeList;
@@ -24,23 +23,98 @@ public class StreamsExercise2 {
 
     // TODO class PersonEmployerPair
 
+    private static class PersonEmployerPair {
+        String employer;
+        Person person;
+
+        public PersonEmployerPair(String employer, Person person) {
+            this.employer = employer;
+            this.person = person;
+        }
+
+        public String getEmployer() {
+            return employer;
+        }
+
+        public Person getPerson() {
+            return person;
+        }
+    }
+
+    private static Stream<PersonEmployerPair> employeeToPairs(Employee employee) {
+        return employee.getJobHistory().stream()
+                .map(JobHistoryEntry::getEmployer)
+                .map(p -> new PersonEmployerPair(p, employee.getPerson()));
+    }
+
+
     @Test
     public void employersStuffLists() {
-        Map<String, List<Person>> employersStuffLists = null;// TODO
-        throw new UnsupportedOperationException();
+        Stream<PersonEmployerPair> personEmployerPairStream = getEmployees().stream()
+                .flatMap(StreamsExercise2::employeeToPairs);
+        Map<String, List<Person>> employersStuffLists = personEmployerPairStream
+                .collect(Collectors.groupingBy(
+                        PersonEmployerPair::getEmployer,
+                        mapping(PersonEmployerPair::getPerson, toList())
+                ));
+
     }
 
     @Test
     public void indexByFirstEmployer() {
-        Map<String, List<Person>> employeesIndex = null;// TODO
-        throw new UnsupportedOperationException();
+        Map<String, List<Person>> employeesIndex = getEmployees().stream()
+                .flatMap(e -> e.getJobHistory().stream().findFirst()
+                        .map(entry -> new PersonEmployerPair(entry.getEmployer(), e.getPerson()))
+                .map(Stream::of).orElseGet(Stream::empty))
+                .collect(Collectors.groupingBy(
+                        PersonEmployerPair::getEmployer,
+                        mapping(PersonEmployerPair::getPerson, toList())
+                ));
     }
 
     @Test
     public void greatestExperiencePerEmployer() {
-        Map<String, Person> employeesIndex = null;// TODO
+        Stream<PersonEmployerDuration> personEmployerDurationStream = getPersonEmployerDuration(getEmployees().stream());
+        Map<String, Person> employeesIndex = personEmployerDurationStream
+                .collect(groupingBy(
+                        PersonEmployerDuration::getEmployer,
+                        collectingAndThen(
+                                maxBy(Comparator.comparing(PersonEmployerDuration::getDuration)), o -> o.get().getPerson()
+                        )
+                ));
 
         assertEquals(new Person("John", "White", 28), employeesIndex.get("epam"));
+    }
+
+    private static Stream<PersonEmployerDuration> getPersonEmployerDuration(Stream<Employee> employeeStream) {
+        return employeeStream.flatMap(employee -> employee.getJobHistory().stream()
+                .collect(groupingBy(JobHistoryEntry::getEmployer, summingInt(JobHistoryEntry::getDuration)))
+                .entrySet().stream()
+                .map(entry -> new PersonEmployerDuration(entry.getValue(), entry.getKey(), employee.getPerson())));
+    }
+
+    private static class PersonEmployerDuration {
+        int duration;
+        String employer;
+        Person person;
+
+        public PersonEmployerDuration(int duration, String employer, Person person) {
+            this.duration = duration;
+            this.employer = employer;
+            this.person = person;
+        }
+
+        public int getDuration() {
+            return duration;
+        }
+
+        public String getEmployer() {
+            return employer;
+        }
+
+        public Person getPerson() {
+            return person;
+        }
     }
 
 
