@@ -23,6 +23,7 @@ public class StreamsExercise1 {
     // https://youtu.be/O8oN4KSZEXE Сергей Куксенко — Stream API, часть 1
     // https://youtu.be/i0Jr2l3jrDA Сергей Куксенко — Stream API, часть 2
 
+
     @Test
     public void getAllEpamEmployees() {
         List<Person> epamEmployees = null;// TODO all persons with experience in epam
