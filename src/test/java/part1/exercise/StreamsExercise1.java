@@ -27,7 +27,8 @@ public class StreamsExercise1 {
 
     public static boolean isEpamWorker(Employee employee) {
         return employee.getJobHistory().stream()
-                .anyMatch(e -> e.getEmployer().equals("epam"));
+                .map(JobHistoryEntry::getEmployer)
+                .anyMatch("epam"::equals);
     }
 
     @Test
@@ -54,7 +55,8 @@ public class StreamsExercise1 {
     public static boolean isWorkerStartedFromEpam(Employee employee) {
         return employee.getJobHistory().stream()
                 .limit(1)
-                .anyMatch(e -> e.getEmployer().equals("epam"));
+                .map(JobHistoryEntry::getEmployer)
+                .anyMatch("epam"::equals);
     }
 
     @Test
@@ -94,7 +96,8 @@ public class StreamsExercise1 {
         final Employee[] employeesArray = employees.toArray(new Employee[0]);
 
         int result = Arrays.stream(employeesArray)
-                .flatMap(employee -> employee.getJobHistory().stream())
+                .map(Employee::getJobHistory)
+                .flatMap(Collection::stream)
                 .filter(e -> e.getEmployer().equals("epam"))
                 .mapToInt(JobHistoryEntry::getDuration)
                 .sum();
