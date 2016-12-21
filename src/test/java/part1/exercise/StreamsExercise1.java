@@ -51,7 +51,7 @@ public class StreamsExercise1 {
     private static boolean isEpamEr(Employee e) {
         return e.getJobHistory()
             .stream()
-            .anyMatch(j -> j.getEmployer().equals("epam"));
+            .anyMatch(j -> "epam".equals(j.getEmployer()));
     }
 
     public static boolean isStartedFromEpam(Employee e) {
