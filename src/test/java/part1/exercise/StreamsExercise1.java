@@ -32,7 +32,7 @@ public class StreamsExercise1 {
 
         for (Employee e: employees) {
             for (JobHistoryEntry j: e.getJobHistory()) {
-                if (j.getEmployer().equals("epam")) {
+                if ("epam".equals(j.getEmployer())) {
                     expectedResult.add(e.getPerson());
                     break;
                 }
@@ -67,7 +67,7 @@ public class StreamsExercise1 {
         List<Person> expectedResult = new ArrayList<>();
 
         for (Employee e: employees) {
-            if (e.getJobHistory().get(0).getEmployer().equals("epam")) {
+            if ("epam".equals(e.getJobHistory().get(0).getEmployer())) {
                 expectedResult.add(e.getPerson());
             }
         }
