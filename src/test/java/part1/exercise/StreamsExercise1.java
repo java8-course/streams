@@ -29,7 +29,8 @@ public class StreamsExercise1 {
     private static boolean isEpamEmployee(Employee e) {
         return e.getJobHistory()
                 .stream()
-                .anyMatch(j -> j.getEmployer().equals("epam"));
+                .map(JobHistoryEntry::getEmployer)
+                .anyMatch("epam"::equals);
     }
 
     @Test
@@ -60,7 +61,8 @@ public class StreamsExercise1 {
         return e.getJobHistory()
                 .stream()
                 .limit(1)
-                .anyMatch(j -> j.getEmployer().equals("epam"));
+                .map(JobHistoryEntry::getEmployer)
+                .anyMatch("epam"::equals);
     }
 
     @Test
@@ -102,7 +104,8 @@ public class StreamsExercise1 {
                 .stream()
                 .flatMap(e -> e.getJobHistory().stream())
                 .filter(j -> j.getEmployer().equals("epam"))
-                .mapToInt(JobHistoryEntry::getDuration).sum();
+                .mapToInt(JobHistoryEntry::getDuration)
+                .sum();
 
         Assert.assertEquals(expected, actual);
     }

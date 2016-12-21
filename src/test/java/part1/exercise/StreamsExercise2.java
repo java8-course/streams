@@ -24,7 +24,8 @@ public class StreamsExercise2 {
         Map<String, List<Person>> employersStuffLists = getEmployees()
                 .stream()
                 .flatMap(StreamsExercise2::employeeToPairs)
-                .collect(Collectors.groupingBy(EmployeerPersonPair::getEmployeer, mapping(EmployeerPersonPair::getPerson, toList())));
+                .collect(Collectors.groupingBy(EmployeerPersonPair::getEmployeer,
+                        mapping(EmployeerPersonPair::getPerson, toList())));
 
         Map<String, List<Person>> expected = new HashMap<>();
         for (Employee e: getEmployees()) {
@@ -51,7 +52,8 @@ public class StreamsExercise2 {
         Map<String, List<Person>> employeesIndex = getEmployees()
                 .stream()
                 .map(e -> new EmployeerPersonPair(e.getPerson(), e.getJobHistory().get(0).getEmployer()))
-                .collect(Collectors.groupingBy(EmployeerPersonPair::getEmployeer, mapping(EmployeerPersonPair::getPerson, toList())));
+                .collect(Collectors.groupingBy(EmployeerPersonPair::getEmployeer,
+                        mapping(EmployeerPersonPair::getPerson, toList())));
 
         Map<String, List<Person>> expected = new HashMap<>();
         for (Employee e: getEmployees()) {
@@ -74,20 +76,35 @@ public class StreamsExercise2 {
     public void greatestExperiencePerEmployer() {
         Map<String, Person> employeesIndex = greatestExperience();
 
-        Assert.assertEquals(new Person("John", "White", 28), employeesIndex.get("epam"));
+//        Assert.assertEquals(new Person("John", "White", 28), employeesIndex.get("epam"));
+        Assert.assertEquals(new Person("Bob", "Doe", 27), employeesIndex.get("epam"));
+
     }
 
     private Map<String, Person> greatestExperience() {
-        final Stream<PersonEmployeerDuration> personEmployeerDurationStream = getEmployees().stream()
-                .flatMap(e -> e.getJobHistory()
-                        .stream()
-                        .map(j -> new PersonEmployeerDuration(e.getPerson(), j.getEmployer(), j.getDuration())));
-        Map<String, Person> collect = personEmployeerDurationStream.collect(groupingBy(
+//        final Stream<PersonEmployeerDuration> personEmployeerDurationStream = getEmployees().stream()
+//                .flatMap(e -> e.getJobHistory()
+//                        .stream()
+//                        .map(j -> new PersonEmployeerDuration(e.getPerson(), j.getEmployer(), j.getDuration())));
+        Map<String, Person> collect = getExpirienceByEmployee(getEmployees()).collect(groupingBy(
                 PersonEmployeerDuration::getEmployeer,
                 collectingAndThen(
                         maxBy(Comparator.comparing(PersonEmployeerDuration::getDuration)),
                         e -> e.get().person)));
         return collect;
+    }
+
+    private Stream<PersonEmployeerDuration> getExpirienceByEmployee(List<Employee> employees) {
+         return employees.stream().flatMap(e -> {
+            Map<String, Integer> collect = e.getJobHistory().stream().collect(Collectors.toMap(JobHistoryEntry::getEmployer,
+                    JobHistoryEntry::getDuration, (d1, d2) -> d1 + d2));
+
+            List<PersonEmployeerDuration> tmp = new ArrayList<PersonEmployeerDuration>();
+            for (String s: collect.keySet()) {
+                tmp.add(new PersonEmployeerDuration(e.getPerson(), s, collect.get(s)));
+            }
+            return tmp.stream();
+        });
     }
 
 
@@ -140,7 +157,10 @@ public class StreamsExercise2 {
                         Arrays.asList(
                                 new JobHistoryEntry(4, "QA", "yandex"),
                                 new JobHistoryEntry(2, "QA", "epam"),
-                                new JobHistoryEntry(2, "dev", "abc")
+                                new JobHistoryEntry(2, "dev", "abc"),
+                                new JobHistoryEntry(333, "BA", "epam"),
+                                new JobHistoryEntry(334, "BA", "epam")
+
                         )),
                 new Employee(
                         new Person("John", "White", 28),
