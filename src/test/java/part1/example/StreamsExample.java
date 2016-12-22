@@ -147,7 +147,6 @@ public class StreamsExample {
                 .collect(Collectors.groupingBy(
                         PersonPositionPair::getPosition,
                         mapping(PersonPositionPair::getPerson, toSet())));
-
     }
 
 /*    private static Map<String, Set<Person>> combineMaps(Map<String, Set<Person>> u1,
