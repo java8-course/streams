@@ -3,6 +3,7 @@ package part1.exercise;
 import data.Employee;
 import data.JobHistoryEntry;
 import data.Person;
+import junit.framework.Assert;
 import org.junit.Test;
 
 import java.util.*;
@@ -25,15 +26,61 @@ public class StreamsExercise1 {
 
     @Test
     public void getAllEpamEmployees() {
-        List<Person> epamEmployees = null;// TODO all persons with experience in epam
-        throw new UnsupportedOperationException();
+        List<Person> epamEmployees;// TODO all persons with experience in epam
+        List<Employee> employees = generateEmployeeList();
+        List<Person> expectedResult = new ArrayList<>();
+
+        for (Employee e: employees) {
+            for (JobHistoryEntry j: e.getJobHistory()) {
+                if ("epam".equals(j.getEmployer())) {
+                    expectedResult.add(e.getPerson());
+                    break;
+                }
+            }
+        }
+
+        epamEmployees = employees
+                .stream()
+                .filter(StreamsExercise1::isEpamEr)
+                .map(Employee::getPerson)
+                .collect(toList());
+
+        Assert.assertEquals(expectedResult, epamEmployees);
+    }
+
+    private static boolean isEpamEr(Employee e) {
+        return e.getJobHistory()
+            .stream()
+                .map(JobHistoryEntry::getEmployer)
+                .anyMatch("epam"::equals);
+    }
+
+    public static boolean isStartedFromEpam(Employee e) {
+        return e.getJobHistory().stream()
+                .limit(1)
+                .map(JobHistoryEntry::getEmployer)
+                .anyMatch("epam"::equals);
     }
 
     @Test
     public void getEmployeesStartedFromEpam() {
-        List<Person> epamEmployees = null;// TODO all persons with first experience in epam
-        throw new UnsupportedOperationException();
+        List<Person> epamEmployees;// TODO all persons with first experience in epam
+        List<Employee> employees = generateEmployeeList();
+        List<Person> expectedResult = new ArrayList<>();
+
+        for (Employee e: employees) {
+            if ("epam".equals(e.getJobHistory().get(0).getEmployer())) {
+                expectedResult.add(e.getPerson());
+            }
+        }
+        epamEmployees = employees.stream()
+                .filter(StreamsExercise1::isStartedFromEpam)
+                .map(Employee::getPerson)
+                .collect(toList());
+
+        Assert.assertEquals(epamEmployees, expectedResult);
     }
+
 
     @Test
     public void sumEpamDurations() {
@@ -49,11 +96,13 @@ public class StreamsExercise1 {
             }
         }
 
-        // TODO
-        throw new UnsupportedOperationException();
+        int result = employees.stream()
+                .flatMap(e -> e.getJobHistory().stream())
+                .filter(e -> e.getEmployer().equals("epam"))
+                .mapToInt(JobHistoryEntry::getDuration)
+                .sum();
 
-        // int result = ???
-        // assertEquals(expected, result);
+        Assert.assertEquals(expected, result);
     }
 
 }
