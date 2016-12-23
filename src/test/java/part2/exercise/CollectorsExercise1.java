@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.function.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class CollectorsExercise1 {
@@ -139,8 +140,7 @@ public class CollectorsExercise1 {
                 .map(entry -> new PersonPositionDuration(
                         employee.getPerson(),
                         entry.getKey(),
-                        entry.getValue().stream().collect(Collectors.summingInt(PersonPositionDuration::getDuration))));
-
+                        entry.getValue().stream().mapToInt(PersonPositionDuration::getDuration).sum()));
     }
 
     // With the longest sum duration on this position
