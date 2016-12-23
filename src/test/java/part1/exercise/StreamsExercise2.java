@@ -81,17 +81,12 @@ public class StreamsExercise2 {
             }
         }
         Map<String, List<Person>> employeesIndex = employees.stream()
-                .map(StreamsExercise2::makePairByFirstEmployer)
+                .flatMap(e -> makePersonEmployerPairs(e).limit(1))
                 .collect(Collectors.groupingBy(PersonEmployerPair::getEmployer,
                         Collectors.mapping(PersonEmployerPair::getPerson,Collectors.toList())));
-
         assertEquals(expected,employeesIndex);
     }
 
-    private static PersonEmployerPair makePairByFirstEmployer(Employee e) {
-        return new PersonEmployerPair(e.getPerson(),    // Is NoSuchElementException better than NPE?
-                e.getJobHistory().stream().limit(1).findAny().get().getEmployer());
-    }
 
     private static class EmployerPersonDuration {
         private final String employer;

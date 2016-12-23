@@ -65,7 +65,7 @@ public class StreamsExercise1 {
     }
 
     private static boolean hasFirstExperienceInEpam(Employee e) {
-        return "epam".equals(e.getJobHistory().stream().findFirst().get().getEmployer());
+        return e.getJobHistory().stream().limit(1).anyMatch(entry -> "epam".equals(entry.getEmployer()));
     }
 
     @Test
