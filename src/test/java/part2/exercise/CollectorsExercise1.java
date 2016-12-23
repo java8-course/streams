@@ -6,10 +6,7 @@ import data.Person;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -70,12 +67,9 @@ public class CollectorsExercise1 {
 
                     @Override
                     public BiConsumer<Map<String, PersonPositionDuration>, PersonPositionDuration> accumulator() {
-                        return (map, triple) -> {
-                            PersonPositionDuration tripleInMap = map.get(triple.getPosition());
-                            if (tripleInMap == null || triple.getDuration() > tripleInMap.getDuration()){
-                                map.put(triple.getPosition(),triple);
-                            }
-                        };
+                        return (map, triple) -> map.merge(triple.getPosition(),
+                                triple,
+                                (ppd1,ppd2) -> ppd2.getDuration() > ppd1.getDuration() ? ppd2 : ppd1);
                     }
 
                     @Override
@@ -93,13 +87,13 @@ public class CollectorsExercise1 {
 
                     @Override
                     public Function<Map<String, PersonPositionDuration>, Map<String, Person>> finisher() {
-                        return triplesMap -> {
-                            Map<String,Person> result = new HashMap<>();
-                            for (PersonPositionDuration triple : triplesMap.values()){
-                                result.put(triple.getPosition(),triple.getPerson());
-                            }
-                            return result;
-                        };
+                        return triplesMap -> triplesMap
+                                .entrySet()
+                                .stream()
+                                .map(Map.Entry::getValue)
+                                .collect(Collectors.toMap(
+                                        PersonPositionDuration::getPosition,
+                                        PersonPositionDuration::getPerson));
                     }
 
                     @Override
@@ -109,13 +103,9 @@ public class CollectorsExercise1 {
                 });
 
         // method #3
-        result = employees.stream()
-                .flatMap(CollectorsExercise1::employeeToTriples)
-                .collect(Collectors.toMap(PersonPositionDuration::getPosition,Function.identity(),
-                        (ppd1,ppd2) -> ppd2.getDuration() > ppd1.getDuration() ? ppd2 : ppd1))
-                .entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey,entry -> entry.getValue().getPerson()));
+        result = getCoolestByPositionFromStream(
+                employees.stream()
+                .flatMap(CollectorsExercise1::employeeToTriples));
         return result;
     }
 
@@ -132,21 +122,36 @@ public class CollectorsExercise1 {
         coolestByPosition.forEach((position, person) -> System.out.println(position + " -> " + person));
     }
 
+    private static Map<String,Person> getCoolestByPositionFromStream(Stream<PersonPositionDuration> upstream){
+        return upstream
+                .collect(Collectors.toMap(PersonPositionDuration::getPosition,Function.identity(),
+                        (ppd1,ppd2) -> ppd2.getDuration() > ppd1.getDuration() ? ppd2 : ppd1))
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey,entry -> entry.getValue().getPerson()));
+    }
+
+    private static Stream<PersonPositionDuration> employeeToTriplesWithSumDuration(Employee employee) {
+        return employeeToTriples(employee)
+                .collect(Collectors.groupingBy(PersonPositionDuration::getPosition))
+                .entrySet()
+                .stream()
+                .map(entry -> new PersonPositionDuration(
+                        employee.getPerson(),
+                        entry.getKey(),
+                        entry.getValue().stream().collect(Collectors.summingInt(PersonPositionDuration::getDuration))));
+
+    }
+
     // With the longest sum duration on this position
     // { John Doe, [{dev, google, 4}, {dev, epam, 4}] } предпочтительнее, чем { A B, [{dev, google, 6}, {QA, epam, 100}]}
     private Map<String, Person> getCoolestByPosition2(List<Employee> employees) {
-        return employees.stream()
-                .flatMap(CollectorsExercise1::employeeToTriples)
-                .collect(Collectors.groupingBy(PersonPositionDuration::getPosition,
-                        Collectors.groupingBy(PersonPositionDuration::getPerson,
-                                HashMap::new,Collectors.summingInt(PersonPositionDuration::getDuration))))
-                .entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey,
-                        // in maps on each position we find max experience
-                        entry -> entry.getValue().entrySet().stream().max(Comparator.comparingInt(Map.Entry::getValue)).get().getKey()));
+        return getCoolestByPositionFromStream(employees.stream()
+                        .flatMap(CollectorsExercise1::employeeToTriplesWithSumDuration));
 
     }
+
+
 
     private List<Employee> getEmployees() {
         return Arrays.asList(
