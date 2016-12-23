@@ -3,18 +3,15 @@ package part1.exercise;
 import data.Employee;
 import data.JobHistoryEntry;
 import data.Person;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.Comparator.comparing;
+import static data.Generator.generateEmployeeList;
 import static java.util.stream.Collectors.*;
 import static org.junit.Assert.assertEquals;
 
@@ -26,35 +23,11 @@ public class StreamsExercise2 {
     // https://youtu.be/i0Jr2l3jrDA Сергей Куксенко — Stream API, часть 2
 
     // TODO class PersonEmployerPair
-    private static class PersonEmployerPair {
-        private final Person person;
-        private final String employer;
-
-        public Person getPerson () {
-            return person;
-        }
-
-        public String getEmployer () {
-            return employer;
-        }
-
-        public PersonEmployerPair (Person person, String employer) {
-            this.person = person;
-            this.employer = employer;
-        }
-    }
 
     @Test
     public void employersStuffLists() {
-        Map<String, List<Person>> employersStuffLists =
-                getEmployees()
-                .stream()
-                .flatMap(e -> e.getJobHistory().stream()
-                                .map(JobHistoryEntry::getEmployer)
-                                .map(empl -> new PersonEmployerPair(e.getPerson(), empl)))
-                .distinct()
-                .collect(groupingBy(PersonEmployerPair::getEmployer, mapping(PersonEmployerPair::getPerson, toList())));// TODO
-//        throw new UnsupportedOperationException();
+        Map<String, List<Person>> employersStuffLists = null;// TODO
+        throw new UnsupportedOperationException();
     }
 
     @Test
