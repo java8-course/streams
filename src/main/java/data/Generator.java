@@ -1,6 +1,6 @@
 package data;
 
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -60,7 +60,10 @@ public class Generator {
     }
 
     public static List<Employee> generateEmployeeList() {
-        // TODO
-        throw new UnsupportedOperationException();
+        List<Employee> list = new LinkedList();
+        for(int i = 0; i < 100; i++){
+            list.add(generateEmployee());
+        }
+        return list;
     }
 }
