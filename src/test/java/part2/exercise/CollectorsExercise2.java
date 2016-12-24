@@ -171,9 +171,10 @@ public class CollectorsExercise2 {
                 .collect(Collectors.toMap(Key::getId,Function.identity(),(key1,key2)->key1));
 
         final Map<String, Set<Value>> valuesMap1 = pairs.stream()
+                .map(Pair::getValue)
                 .collect(Collectors.groupingBy(
-                        pair -> pair.getValue().getKeyId(),
-                        Collectors.mapping(Pair::getValue, Collectors.toSet())));
+                        Value::getKeyId,
+                        Collectors.toSet()));
 
         // В каждом Map.Entry id ключа должно совпадать с keyId для каждого значения в списке
         final Map<Key, Set<Value>> keyValuesMap1 = combineMaps(keyMap1, valuesMap1);
@@ -190,30 +191,30 @@ public class CollectorsExercise2 {
                     public BiConsumer<MapPair, Pair> accumulator() {
                         return (mapPair, pair) -> {
                             mapPair.getKeyById().merge(pair.getKey().getId(), pair.getKey(), (k1, k2) -> k1);
-                            mapPair.getValueById().merge(
-                                    pair.getValue().getKeyId(),
-                                    new HashSet<>(Collections.singletonList(pair.getValue())),
-                                    (values, values2) -> {
-                                        values.addAll(values2);
-                                        return values;
-                                    });
+                            mapPair.getValueById()
+                                    .computeIfAbsent(pair.getValue().getKeyId(),(s) -> new HashSet<>())
+                                    .add(pair.getValue());
                         };
                     }
 
                     @Override
                     public BinaryOperator<MapPair> combiner() {
                         return (mp1,mp2) -> {
-                            Map<String, Key> keyMap = CollectorsExercise2.<String,Key,Map<String,Key>>mapMerger(
-                                    (Key key1, Key key2) -> key1).apply(
+                            BinaryOperator<Map<String, Key>> keyMapsMergeOperator = CollectorsExercise2.mapMerger(
+                                    (Key key1, Key key2) -> key1);
+
+                            Map<String, Key> keyMap = keyMapsMergeOperator.apply(
                                     mp1.getKeyById(),
                                     mp2.getKeyById());
 
+                            BinaryOperator<Map<String, Set<Value>>> valuesMapsMergeOperator = CollectorsExercise2.mapMerger(
+                                    (Set<Value> set1, Set<Value> set2) -> {
+                                        set1.addAll(set2);
+                                        return set1;
+                                    });
+
                             Map<String, Set<Value>> valuesMap =
-                                    CollectorsExercise2.<String,Set<Value>,Map<String,Set<Value>>>mapMerger(
-                                            (Set<Value> set1, Set<Value> set2) -> {
-                                set1.addAll(set2);
-                                return set1;
-                            }).apply(mp1.getValueById(),mp2.getValueById());
+                                    valuesMapsMergeOperator.apply(mp1.getValueById(),mp2.getValueById());
                             return new MapPair(keyMap,valuesMap);
                         };
                     }
