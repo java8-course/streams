@@ -62,7 +62,21 @@ public class CollectorsExercise1 {
         // Collectors.toMap
         // iterate twice: stream...collect(...).stream()...
         // TODO
-        throw new UnsupportedOperationException();
+
+        //сложности с first option, нужна подсказка
+        return employees.stream()
+                .flatMap(e -> e.getJobHistory().stream()
+                        .map(j -> new PersonPositionDuration(e.getPerson(), j.getPosition(), j.getDuration())))
+                .collect(Collectors.groupingBy(p -> p.getPosition()))
+                .entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().stream().collect(Collectors.maxBy((o1, o2) -> {
+                            if (o1.getDuration() > o2.getDuration())
+                                return 1;
+                            else if (o1.getDuration() == o2.getDuration())
+                                return 0;
+                            return -1;
+                        })).get().getPerson())
+                );
     }
 
     @Test
@@ -76,7 +90,28 @@ public class CollectorsExercise1 {
     // { John Doe, [{dev, google, 4}, {dev, epam, 4}] } предпочтительнее, чем { A B, [{dev, google, 6}, {QA, epam, 100}]}
     private Map<String, Person> getCoolestByPosition2(List<Employee> employees) {
         // TODO
-        throw new UnsupportedOperationException();
+        return employees.stream()
+                .flatMap(e -> e.getJobHistory().stream()
+                        .map(j -> new PersonPositionDuration(e.getPerson(), j.getPosition(), j.getDuration())))
+                .collect(Collectors.groupingBy(e -> e.getPosition()))
+                .entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().stream()
+                        .collect(Collectors.groupingBy(PersonPositionDuration::getPerson)).entrySet().stream()
+                        .collect(Collectors.toMap(j -> j.getKey(), j -> j.getValue().stream().mapToInt(k -> k.getDuration()).sum()))))
+                .entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().entrySet().stream()
+                                .max((o1, o2) -> {
+                                    if (o1.getValue() >= o2.getValue())
+                                        return 1;
+                                    return -1;
+                                }).get().getKey()
+                        )
+                );
+        /*
+        1) сопоставить позицию и персонпозишондюрашон
+        2) сопоставить позицию и (персона и суммарный дюрашон)
+        3) найти максимального персона
+         */
     }
 
     private List<Employee> getEmployees() {
