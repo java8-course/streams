@@ -124,13 +124,11 @@ public class CollectorsExercise1 {
 
 
     private List<PersonPositionDuration> getDurationsByPosition(Employee e) {
-        List<PersonPositionDuration> personPositionDurations = new ArrayList<>();
         Map<String, Integer> collect = e.getJobHistory().stream()
                 .collect(Collectors.toMap(JobHistoryEntry::getPosition, JobHistoryEntry::getDuration, (d1, d2) -> (d1 + d2)));
-        for (String s : collect.keySet()) {
-            personPositionDurations.add(new PersonPositionDuration(e.getPerson(), s, collect.get(s)));
-        }
-        return personPositionDurations;
+        return collect.keySet()
+                .stream()
+                .map(s -> new PersonPositionDuration(e.getPerson(), s, collect.get(s))).collect(Collectors.toList());
     }
 
     private List<PersonPositionDuration> getFullDurationByPosition(Employee e) {
