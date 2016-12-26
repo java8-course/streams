@@ -74,7 +74,7 @@ public class StreamsExercise {
         final Map<String, List<PersonEmployer>> index = employees
                 .stream()
                 .flatMap(StreamsExercise::employeesByPerson)
-                .collect(Collectors.groupingBy(PersonEmployer::getEmployer, Collectors.toList()));
+                .collect(Collectors.groupingBy(PersonEmployer::getEmployer));
 
         assertEquals(11, index.get("epam").size());
     }
