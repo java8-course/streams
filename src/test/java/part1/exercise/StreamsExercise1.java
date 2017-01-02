@@ -42,13 +42,19 @@ public class StreamsExercise1 {
         assertEquals(false, epamEmployees.isEmpty());
     }
 
+    static boolean hasEpamExperienceFirst(List<JobHistoryEntry> jobHistoryEntries){
+        return jobHistoryEntries.stream()
+                .limit(1)
+                .map(JobHistoryEntry::getEmployer)
+                .anyMatch("epam"::equals);
+    }
+
     @Test
     public void getEmployeesStartedFromEpam() {
         final List<Employee> employees = generateEmployeeList();
         
         List<Person> epamEmployees = employees.stream()
-                .filter(e -> hasEpamExperience(e.getJobHistory()))
-                .filter(e -> e.getJobHistory().get(0).getEmployer().equals("epam"))
+                .filter(e -> hasEpamExperienceFirst(e.getJobHistory()))
                 .map(Employee::getPerson)
                 .collect(toList());
         // TODO all persons with first experience in epam
@@ -71,7 +77,6 @@ public class StreamsExercise1 {
         }
 
          int result = employees.stream()
-                 .filter(e -> hasEpamExperience(e.getJobHistory()))
                  .map(e -> e.getJobHistory())
                  .flatMap(List::stream)
                  .filter(e -> e.getEmployer().equals("epam"))

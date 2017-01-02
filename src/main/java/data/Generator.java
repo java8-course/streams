@@ -60,10 +60,11 @@ public class Generator {
     }
 
     public static List<Employee> generateEmployeeList() {
-        List<Employee> list = new LinkedList();
-        for(int i = 0; i < 100; i++){
-            list.add(generateEmployee());
-        }
-        return list;
+        int maxLength = 10;
+        final int length = ThreadLocalRandom.current().nextInt(maxLength) + 1;
+
+        return Stream.generate(Generator::generateEmployee)
+                .limit(length)
+                .collect(toList());
     }
 }
