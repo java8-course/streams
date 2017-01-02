@@ -23,7 +23,7 @@ public class StreamsExercise2 {
     // TODO class PersonEmployerPair
 
     class PersonEmployerPair {
-        Person person;
+        final Person person;
 
         public PersonEmployerPair(Person person, String employer) {
             this.person = person;
@@ -36,16 +36,8 @@ public class StreamsExercise2 {
             return person;
         }
 
-        public void setPerson(Person person) {
-            this.person = person;
-        }
-
         public String getEmployer() {
             return employer;
-        }
-
-        public void setEmployer(String employer) {
-            this.employer = employer;
         }
     }
 
@@ -54,59 +46,44 @@ public class StreamsExercise2 {
         getEmployees().stream()
                 .flatMap(e -> e.getJobHistory().stream()
                         .map(j -> new PersonEmployerPair(e.getPerson(), j.getEmployer())))
-                .collect(Collectors.groupingBy(e -> e.getEmployer()))
-                .entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey(),
-                        e -> e.getValue().stream()
-                                .map(j -> j.getPerson())
-                                .collect(toList())
-                        )
-                )
-        ;
-
-        // TODO
+                .collect(collectingAndThen(groupingBy(e -> e.getEmployer()),
+                        e -> e.entrySet().stream().collect(toMap(j -> j.getKey(), j -> j.getValue().stream()
+                                .map(k -> k.getPerson()))))
+                );
     }
 
     @Test
     public void indexByFirstEmployer() {
         Map<String, List<Person>> employeesIndex = getEmployees().stream()
                 .map(e -> new PersonEmployerPair(e.getPerson(), e.getJobHistory().get(0).getEmployer()))
-                .collect(Collectors.groupingBy(e -> e.getEmployer())).entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().stream()
-                        .map(j -> j.getPerson())
-                        .collect(toList())));
+                .collect(Collectors.groupingBy(PersonEmployerPair::getEmployer, Collectors.mapping(PersonEmployerPair::getPerson, toList())));
     }
 
     @Test
     public void greatestExperiencePerEmployer() {
         Map<String, Person> employeesIndex = getEmployees().stream()
                 .flatMap(employee -> employee.getJobHistory().stream()
-                        .collect(toMap(j -> j.getEmployer(), j -> ((Object) employee)))
+                        .collect(toMap(j -> j.getEmployer(), j -> (employee)))
                         .entrySet()
                         .stream()
                 )
-                .collect(groupingBy(e -> e.getKey()))
-                .entrySet()
-                .stream()
+                .collect(groupingBy(e -> e.getKey(), mapping(e -> e.getValue(), toList()))).entrySet().stream()
                 .collect(toMap(e -> e.getKey(), e -> e.getValue().stream()
-                                .collect(maxBy((o1, o2) -> {
-                                            if (((Employee) o1.getValue()).getJobHistory().stream()
-                                                    .filter(j -> j.getEmployer() == e.getKey())
-                                                    .collect(toList())
-                                                    .get(0).getDuration()
-                                                    >=
-                                                    ((Employee) o2.getValue()).getJobHistory().stream()
-                                                            .filter(j -> j.getEmployer() == e.getKey())
-                                                            .collect(toList())
-                                                            .get(0).getDuration())
-                                                return 1;
-                                            return -1;
-                                        })
-                                )
-                        )
-                ).entrySet().stream()
-                .collect(toMap(e -> e.getKey(), e -> ((Employee) e.getValue().get().getValue()).getPerson()));
-    /*
+                        .collect(maxBy((o1, o2) -> {
+                            if (o1.getJobHistory().stream()
+                                    .filter(j -> j.getEmployer() == e.getKey())
+                                    .collect(toList())
+                                    .get(0).getDuration()
+                                    >=
+                                    o2.getJobHistory().stream()
+                                            .filter(j -> j.getEmployer() == e.getKey())
+                                            .collect(toList())
+                                            .get(0).getDuration())
+                                return 1;
+                            return -1;
+                        })))).entrySet().stream()
+                .collect(toMap(e -> e.getKey(), e -> e.getValue().get().getPerson()));
+        /*
     1. собрать в емплоер + лист емплои
     2. в листе емплои найти максимум
      */
