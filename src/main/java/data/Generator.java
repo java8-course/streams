@@ -1,6 +1,6 @@
 package data;
 
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -60,7 +60,11 @@ public class Generator {
     }
 
     public static List<Employee> generateEmployeeList() {
-        // TODO
-        throw new UnsupportedOperationException();
+        int maxLength = 10;
+        final int length = ThreadLocalRandom.current().nextInt(maxLength) + 1;
+
+        return Stream.generate(Generator::generateEmployee)
+                .limit(length)
+                .collect(toList());
     }
 }
