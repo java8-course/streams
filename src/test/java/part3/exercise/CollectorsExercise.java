@@ -41,7 +41,7 @@ public class CollectorsExercise {
 
             @Override
             public Function <Set<T>, Set <T>> finisher() {
-                return null;
+                return Function.identity();
             }
 
             @Override
