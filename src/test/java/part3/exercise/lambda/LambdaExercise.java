@@ -51,7 +51,7 @@ public class LambdaExercise {
         assertEquals(Integer.valueOf(3), getStringLength.apply("ABC"));
 
         // TODO get person name length using getPersonName and getStringLength without andThen
-        final Function<Person, Integer> getPersonNameLength1 = p -> getPersonName.apply(p).length();
+        final Function<Person, Integer> getPersonNameLength1 = p -> getStringLength.apply(getPersonName.apply(p));
 
         // TODO get person name length using getPersonName and getStringLength with andThen
         final Function<Person, Integer> getPersonNameLength2 = getPersonName.andThen(getStringLength);
