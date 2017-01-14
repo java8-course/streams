@@ -34,6 +34,11 @@ public class CollectorCombination {
 
     private static <T, M1, M2, R1, R2> Collector<T, Pair<M1, M2>, Pair<R1, R2>> paired(Collector<T, M1, R1> c1,
                                                                                        Collector<T, M2, R2> c2) {
+
+        //toList
+        //collectAndThan
+        //mapping
+        //paired  - это тут, все остальное в отдельном классе
         // TODO
         throw new UnsupportedOperationException();
     }
