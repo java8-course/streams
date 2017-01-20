@@ -80,8 +80,7 @@ public class StreamsExercise1 {
             }
         }
 
-        final Employee[] employeesArray = employees.toArray(new Employee[0]);
-        int result = Arrays.stream(employeesArray)
+        int result = employees.stream()
                 .map(Employee::getJobHistory)
                 .flatMap(Collection::stream)
                 .filter(e -> e.getEmployer().equals("epam"))
