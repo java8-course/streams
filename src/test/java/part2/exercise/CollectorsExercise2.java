@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -241,9 +242,10 @@ public class CollectorsExercise2 {
                     }
                 });
 
+        // final Map<Key, List<Value>> keyValuesMap2 = valueMap2.entrySet().stream()...
         final Map<String, Key> keyMap2 = res2.getKeyById();
         final Map<String, List<Value>> valuesMapTwo = res2.getValueById();
-        final Map<Key, List<Value>> keyValuesMapTwo = valuesMapTwo.entrySet().stream().collect(Collectors.toMap(entry -> keyMap2.get(entry.getKey()),
+        final Map<Key, List<Value>> keyValuesMapTwo = valuesMapTwo.entrySet().stream().collect(toMap(entry -> keyMap2.get(entry.getKey()),
                 Map.Entry::getValue, (valuesOne, valuesTwo) -> {
                     valuesOne.addAll(valuesTwo);
                     return valuesOne;
@@ -253,8 +255,26 @@ public class CollectorsExercise2 {
 
 
         // Classic for(...) {...}
+        final Map<String, Key> expectedKeys = new HashMap<>();
+        final Map<String, List<Value>> expectedValues = new HashMap<>();
 
-        // final Map<Key, List<Value>> keyValuesMap2 = valueMap2.entrySet().stream()...
+        for (Pair p : pairs) {
+            expectedKeys.put(p.getKey().getId(), p.getKey());
+            expectedValues.merge(p.getValue().getKeyId(), new ArrayList<>(singletonList(p.getValue())),
+                    (s1, s2) -> {
+                        s1.addAll(s2);
+                        return s1;
+                    }
+            );
+        }
+
+        final Map<Key, List<Value>> expected = expectedValues.entrySet().stream().collect(toMap(entry -> keyMap2.get(entry.getKey()),
+                Map.Entry::getValue, (values1, values2) -> {
+                    values1.addAll(values2);
+                    return values1;
+                }));
+
+        assertEquals(keyValuesMapOne, expected);
 
         // Optional: Получение результата сразу:
 
