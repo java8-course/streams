@@ -3,46 +3,90 @@ package part1.exercise;
 import data.Employee;
 import data.JobHistoryEntry;
 import data.Person;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import static data.Generator.generateEmployeeList;
+import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class StreamsExercise2 {
     // https://youtu.be/kxgo7Y4cdA8 Сергей Куксенко и Алексей Шипилёв — Через тернии к лямбдам, часть 1
     // https://youtu.be/JRBWBJ6S4aU Сергей Куксенко и Алексей Шипилёв — Через тернии к лямбдам, часть 2
 
-    // https://youtu.be/O8oN4KSZEXE Сергей Куксенко — Stream API, часть 1
     // https://youtu.be/i0Jr2l3jrDA Сергей Куксенко — Stream API, часть 2
+    // https://youtu.be/O8oN4KSZEXE Сергей Куксенко — Stream API, часть 1
 
-    // TODO class PersonEmployerPair
+
+    @Data
+    @AllArgsConstructor
+    class PersonEmployer{
+        private Person person;
+        private String employer;
+    }
+
+    @Data
+    @AllArgsConstructor
+    class PersonEmployerDuration{
+        private final Person person;
+        private final String employer;
+        private final int duration;
+
+    }
 
     @Test
     public void employersStuffLists() {
-        Map<String, List<Person>> employersStuffLists = null;// TODO
-        throw new UnsupportedOperationException();
+
+        Map<String, Set<Person>> employersStuffLists = getEmployees().stream()
+                .flatMap(
+                        e -> e.getJobHistory()
+                                .stream()
+                                .map(j -> new PersonEmployer(e.getPerson(),j.getEmployer()))
+                )
+                .collect(groupingBy(PersonEmployer::getEmployer, mapping(PersonEmployer::getPerson, toSet())));
+
+        assertTrue(employersStuffLists.get("epam").contains(new Person("John", "Galt", 20)));
     }
 
     @Test
     public void indexByFirstEmployer() {
-        Map<String, List<Person>> employeesIndex = null;// TODO
-        throw new UnsupportedOperationException();
+        Map<String, Set<Person>> employeesIndex = getEmployees().stream()
+                .flatMap(
+                        e -> e.getJobHistory()
+                                .stream()
+                                .limit(1)
+                                .map(j -> new PersonEmployer(e.getPerson(), j.getEmployer()))
+                )
+                .collect(groupingBy(PersonEmployer::getEmployer, mapping(PersonEmployer::getPerson,toSet())));
+
+        assertTrue(employeesIndex.get("epam").contains(new Person("John", "Galt", 20)));
+        assertTrue(!employeesIndex.get("epam").contains(new Person("John", "Doe", 21)));
+
     }
 
     @Test
     public void greatestExperiencePerEmployer() {
-        Map<String, Person> employeesIndex = null;// TODO
+        Map<String, Person> employeesIndex = getEmployees().stream()
+                .flatMap(
+                        e -> e.getJobHistory().stream()
+                                .map(j -> new PersonEmployerDuration(e.getPerson(),j.getEmployer(), j.getDuration())
+
+                                )
+                )
+                .collect(groupingBy(
+                        PersonEmployerDuration::getEmployer, collectingAndThen(
+                                maxBy(comparing(PersonEmployerDuration::getDuration)), p -> p.get().getPerson()))
+                );
+
+//        employeesIndex.entrySet().stream().forEach(System.out::println);
 
         assertEquals(new Person("John", "White", 28), employeesIndex.get("epam"));
     }
-
 
     private List<Employee> getEmployees() {
         return Arrays.asList(
