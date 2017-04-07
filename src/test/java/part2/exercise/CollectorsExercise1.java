@@ -16,6 +16,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.maxBy;
 import static java.util.stream.Collectors.toList;
 
 public class CollectorsExercise1 {
@@ -53,16 +56,30 @@ public class CollectorsExercise1 {
 
     // With the longest duration on single job
     private Map<String, Person> getCoolestByPosition(List<Employee> employees) {
+        final Stream<PersonPositionDuration> personPositionDurationStream = employees.stream()
+                .flatMap(
+                        e -> e.getJobHistory()
+                                .stream()
+                                .map(j -> new PersonPositionDuration(e.getPerson(), j.getPosition(), j.getDuration())));
+
         // First option
-        // Collectors.maxBy
-        // Collectors.collectingAndThen
-        // Collectors.groupingBy
+//        return personPositionDurationStream
+//                .collect(Collectors.groupingBy(PersonPositionDuration::getPosition,
+//                        collectingAndThen(
+//                                maxBy(comparing(PersonPositionDuration::getDuration)), p -> p.get().getPerson())));
 
         // Second option
-        // Collectors.toMap
-        // iterate twice: stream...collect(...).stream()...
+        Map<String, PersonPositionDuration> map = personPositionDurationStream
+                .collect(Collectors.toMap(PersonPositionDuration::getPosition,
+                        Function.identity(),
+                        BinaryOperator.maxBy(comparing(PersonPositionDuration::getDuration))));
+
+        return map.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        e -> e.getValue().getPerson()));
+
+        // Third option
         // TODO
-        throw new UnsupportedOperationException();
     }
 
     @Test
