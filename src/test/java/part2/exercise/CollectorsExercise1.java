@@ -7,6 +7,15 @@ import data.Person;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.*;
 
@@ -45,15 +54,15 @@ public class CollectorsExercise1 {
     // With the longest duration on single job
     private Map<String, Person> getCoolestByPosition(List<Employee> employees) {
 
-        Map<String, Person> result = employees.stream()
-                .flatMap(emp -> emp.getJobHistory()
-                        .stream()
-                        .map(job -> new Job(emp.getPerson(), job.getEmployer(), job.getDuration(), job.getPosition())))
-                .collect(groupingBy(Job::getPosition,
-                        collectingAndThen(
-                                maxBy(Comparator.comparing(Job::getDuration)), res -> res.get().getPerson())));
-
-        return result;
+//        Map<String, Person> result = employees.stream()
+//                .flatMap(emp -> emp.getJobHistory()
+//                        .stream()
+//                        .map(job -> new Job(emp.getPerson(), job.getEmployer(), job.getDuration(), job.getPosition())))
+//                .collect(groupingBy(Job::getPosition,
+//                        collectingAndThen(
+//                                maxBy(Comparator.comparing(Job::getDuration)), res -> res.get().getPerson())));
+//
+//        return result;
 
 //        Map<String, Person> result = employees.stream()
 //                .flatMap(emp -> emp.getJobHistory()
@@ -67,49 +76,48 @@ public class CollectorsExercise1 {
 //
 //        return result;
 
-//        return employees.stream()
-//                .flatMap(emp -> emp.getJobHistory()
-//                        .stream()
-//                        .map(job -> new Job(emp.getPerson(), job.getEmployer(), job.getDuration(), job.getPosition()))
-//                        .sorted(Comparator.comparing(Job::getDuration)))
-//                .collect(new Collector<Job, Map<String, Job>, Map<String, Person>>() {
-//                    @Override
-//                    public Supplier<Map<String, Job>> supplier() {
-//                        return HashMap::new;
-//                    }
-//
-//                    @Override
-//                    public BiConsumer<Map<String, Job>, Job> accumulator() {
-//                        return (acc, el) ->
-//                                acc.merge(el.getPosition(), el,
-//                                        (key, old) -> old.getDuration() < el.getDuration() ? el : old);
-//                    }
-//
-//                    @Override
-//                    public BinaryOperator<Map<String, Job>> combiner() {
-//                        return (map1, map2) -> {
-//                            map2.forEach((key1, value) -> map1.merge(key1, value,
-//                                    (key, old) -> old.getDuration() < value.getDuration() ? value : old));
-//                            return map1;
-//                        };
-//                    }
-//
-//                    @Override
-//                    public Function<Map<String, Job>, Map<String, Person>> finisher() {
-//                        return (map) -> {
-//                            Map<String, Person> result1 = new HashMap<>();
-//                            map.forEach((k, v) -> {
-//                                result1.put(k, v.getPerson());
-//                            });
-//                            return result1;
-//                        };
-//                    }
-//
-//                    @Override
-//                    public Set<Characteristics> characteristics() {
-//                        return Collections.emptySet();
-//                    }
-//                });
+        return employees.stream()
+                .flatMap(emp -> emp.getJobHistory()
+                        .stream()
+                        .map(job -> new Job(emp.getPerson(), job.getEmployer(), job.getDuration(), job.getPosition())))
+                .collect(new Collector<Job, Map<String, Job>, Map<String, Person>>() {
+                    @Override
+                    public Supplier<Map<String, Job>> supplier() {
+                        return HashMap::new;
+                    }
+
+                    @Override
+                    public BiConsumer<Map<String, Job>, Job> accumulator() {
+                        return (acc, el) ->
+                                acc.merge(el.getPosition(), el,
+                                        (old, key) -> old.getDuration() < el.getDuration() ? el : old);
+                    }
+
+                    @Override
+                    public BinaryOperator<Map<String, Job>> combiner() {
+                        return (map1, map2) -> {
+                            map2.forEach((key1, value) -> map1.merge(key1, value,
+                                    (old, key) -> old.getDuration() < value.getDuration() ? value : old));
+                            return map1;
+                        };
+                    }
+
+                    @Override
+                    public Function<Map<String, Job>, Map<String, Person>> finisher() {
+                        return (map) -> {
+                            Map<String, Person> result1 = new HashMap<>();
+                            map.forEach((k, v) -> {
+                                result1.put(k, v.getPerson());
+                            });
+                            return result1;
+                        };
+                    }
+
+                    @Override
+                    public Set<Characteristics> characteristics() {
+                        return Collections.emptySet();
+                    }
+                });
 
     }
 
@@ -123,28 +131,8 @@ public class CollectorsExercise1 {
     // With the longest sum duration on this position
     // { John Doe, [{dev, google, 4}, {dev, epam, 4}] } предпочтительнее, чем { A B, [{dev, google, 6}, {QA, epam, 100}]}
     private Map<String, Person> getCoolestByPosition2(List<Employee> employees) {
-
-        Map<String, Person> result = employees.stream()
-                .flatMap(emp -> emp.getJobHistory()
-                        .stream()
-                        .map(job -> new Job(emp.getPerson(), job.getEmployer(), job.getDuration(), job.getPosition())))
-                .collect(groupingBy(Job::getPosition,
-                        collectingAndThen(
-                                groupingBy(Job::getPerson, reducing(
-                                        (p1, p2) -> new Job(p1.getPerson(), p1.getEmployer(),
-                                                p1.getDuration() + p2.getDuration(), p1.getPosition()))),
-                                CollectorsExercise1::findMaxJob)));
-
-        return result;
-    }
-
-    private static Person findMaxJob(Map<Person, Optional<Job>> map) {
-        return map.entrySet()
-                .stream()
-                .max(Comparator.comparing(ent -> ent.getValue().get().getDuration()))
-                .get()
-                .getKey();
-
+        // TODO
+        throw new UnsupportedOperationException();
     }
 
     private List<Employee> getEmployees() {
@@ -168,10 +156,10 @@ public class CollectorsExercise1 {
                                 new JobHistoryEntry(60, "QA", "epam")
                         )),
                 new Employee(
-                        new Person("John", "GaltTotal", 23),
+                        new Person("John", "Galt", 23),
                         Arrays.asList(
-                                new JobHistoryEntry(30, "dev", "epam"),
-                                new JobHistoryEntry(20, "dev", "google")
+                                new JobHistoryEntry(3, "dev", "epam"),
+                                new JobHistoryEntry(2, "dev", "google")
                         )),
                 new Employee(
                         new Person("John", "Doe", 24),
@@ -192,17 +180,16 @@ public class CollectorsExercise1 {
                                 new JobHistoryEntry(1, "dev", "google")
                         )),
                 new Employee(
-                        new Person("Bob", "DoeTotal", 27),
+                        new Person("Bob", "Doe", 27),
                         Arrays.asList(
-                                new JobHistoryEntry(40, "QA", "yandex"),
-                                new JobHistoryEntry(25, "QA", "epam"),
+                                new JobHistoryEntry(4, "QA", "yandex"),
+                                new JobHistoryEntry(2, "QA", "epam"),
                                 new JobHistoryEntry(2, "dev", "abc")
                         )),
                 new Employee(
-                        new Person("John", "WhiteTotal", 28),
-                        Arrays.asList(
-                                new JobHistoryEntry(26, "BA", "epam"),
-                                new JobHistoryEntry(36, "BA", "epam")
+                        new Person("John", "White", 28),
+                        Collections.singletonList(
+                                new JobHistoryEntry(6, "BA", "epam")
                         )),
                 new Employee(
                         new Person("John", "Galt", 29),
