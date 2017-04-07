@@ -5,10 +5,8 @@ import data.JobHistoryEntry;
 import data.Person;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static data.Generator.generateEmployeeList;
@@ -22,12 +20,22 @@ public class StreamsExercise2 {
     // https://youtu.be/O8oN4KSZEXE Сергей Куксенко — Stream API, часть 1
     // https://youtu.be/i0Jr2l3jrDA Сергей Куксенко — Stream API, часть 2
 
-    // TODO class PersonEmployerPair
-
     @Test
     public void employersStuffLists() {
-        Map<String, List<Person>> employersStuffLists = null;// TODO
-        throw new UnsupportedOperationException();
+        List<Employee> employees = getEmployees();
+
+        Map<String, List<Person>> employersStuffLists = employees.stream()
+                .flatMap(emp -> {
+                    Person per = emp.getPerson();
+                    return emp.getJobHistory()
+                            .stream()
+                            .map(job -> new PersonEmployerPair(per, job.getEmployer(), job.getDuration()));
+                })
+                .collect(groupingBy(PersonEmployerPair::getEmployer,
+                            mapping(PersonEmployerPair::getPerson, toList())));
+
+        assertEquals(Collections.singletonList(new Person("Bob", "White", 31)),
+                employersStuffLists.get("uralvagonzavod"));
     }
 
     @Test
@@ -38,7 +46,18 @@ public class StreamsExercise2 {
 
     @Test
     public void greatestExperiencePerEmployer() {
-        Map<String, Person> employeesIndex = null;// TODO
+
+        Map<String, Person> employeesIndex = getEmployees().stream()
+                .flatMap(emp -> {
+                    Person per = emp.getPerson();
+                    return emp.getJobHistory()
+                            .stream()
+                            .map(job -> new PersonEmployerPair(per, job.getEmployer(), job.getDuration()));
+                })
+                .collect(groupingBy(PersonEmployerPair::getEmployer,
+                        collectingAndThen(
+                                maxBy(Comparator.comparing(el -> el.duration)), res -> res.get().getPerson())));
+
 
         assertEquals(new Person("John", "White", 28), employeesIndex.get("epam"));
     }
@@ -115,10 +134,36 @@ public class StreamsExercise2 {
                         )),
                 new Employee(
                         new Person("Bob", "White", 31),
-                        Collections.singletonList(
-                                new JobHistoryEntry(6, "QA", "epam")
+                        Arrays.asList(
+                                new JobHistoryEntry(6, "QA", "epam"),
+                                new JobHistoryEntry(1, "QA", "uralvagonzavod")
                         ))
         );
+    }
+
+    private class PersonEmployerPair {
+        private final Person person;
+
+        public Person getPerson() {
+            return person;
+        }
+
+        public String getEmployer() {
+            return employer;
+        }
+
+        public int getDuration() {
+            return duration;
+        }
+
+        private final String employer;
+        private final int duration;
+
+        private PersonEmployerPair(Person person, String employer, int duration) {
+            this.person = person;
+            this.employer = employer;
+            this.duration = duration;
+        }
     }
 
 }
