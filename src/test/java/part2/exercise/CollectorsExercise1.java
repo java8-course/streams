@@ -6,25 +6,41 @@ import data.Person;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
 
 public class CollectorsExercise1 {
 
     @Test
     public void getTheCoolestOne() {
-        final Map<String, Person> coolestByPosition = getCoolestByPosition(getEmployees());
 
-        coolestByPosition.forEach((position, person) -> System.out.println(position + " -> " + person));
+        Person expected = new Person("John", "Doe", 30);
+
+        final Map<String, Person> coolestByPosition0 = getCoolestByPosition0(getEmployees());
+
+        coolestByPosition0.forEach((position, person) -> System.out.println(position + " -> " + person));
+        assertThat(coolestByPosition0.get("dev"), equalTo(expected));
+        System.out.println();
+
+        final Map<String, Person> coolestByPosition1 = getCoolestByPosition1(getEmployees());
+
+        coolestByPosition0.forEach((position, person) -> System.out.println(position + " -> " + person));
+        assertThat(coolestByPosition1.get("dev"), equalTo(expected));
+        System.out.println();
+
+        final Map<String, Person> coolestByPositionCollector = getCoolestByPositionCollector(getEmployees());
+
+        coolestByPosition0.forEach((position, person) -> System.out.println(position + " -> " + person));
+        assertThat(coolestByPositionCollector.get("dev"), equalTo(expected));
+        System.out.println();
     }
 
     private static class PersonPositionDuration {
@@ -51,18 +67,89 @@ public class CollectorsExercise1 {
         }
     }
 
-    // With the longest duration on single job
-    private Map<String, Person> getCoolestByPosition(List<Employee> employees) {
-        // First option
-        // Collectors.maxBy
-        // Collectors.collectingAndThen
-        // Collectors.groupingBy
 
-        // Second option
-        // Collectors.toMap
-        // iterate twice: stream...collect(...).stream()...
-        // TODO
-        throw new UnsupportedOperationException();
+    private Map<String, Person> getCoolestByPosition0(List<Employee> employees) {
+        return employees.stream()
+                .flatMap(this::getPersonPositionDuration)
+                .collect(groupingBy(
+                        PersonPositionDuration::getPosition,
+                        collectingAndThen(
+                                maxBy(Comparator.comparing(PersonPositionDuration::getDuration)),
+                                pep -> pep.get().getPerson()
+                        )
+                ));
+    }
+
+    private Map<String, Person> getCoolestByPosition1(List<Employee> employees) {
+        return employees.stream()
+                .flatMap(this::getPersonPositionDuration)
+                .collect(toMap(
+                        PersonPositionDuration::getPosition,
+                        Function.identity(),
+                        (ppd1, ppd2) -> ppd1.getDuration() > ppd2.getDuration() ? ppd1 : ppd2))
+                .entrySet().stream()
+                .collect(toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue().getPerson()
+                ));
+    }
+
+    private Map<String, Person> getCoolestByPositionCollector(List<Employee> employees) {
+        return employees.stream()
+                .flatMap(this::getPersonPositionDuration)
+                .collect(collector);
+    }
+
+    private Collector<PersonPositionDuration, Map<String, PersonPositionDuration>, Map<String, Person>> collector =
+            new Collector<PersonPositionDuration, Map<String, PersonPositionDuration>, Map<String, Person>>() {
+                @Override
+                public Supplier<Map<String, PersonPositionDuration>> supplier() {
+                    return HashMap::new;
+                }
+
+                @Override
+                public BiConsumer<Map<String, PersonPositionDuration>, PersonPositionDuration> accumulator() {
+                    return (c, p) -> c.put(p.getPosition(), resolve(c, p));
+                }
+
+                private PersonPositionDuration resolve(Map<String, PersonPositionDuration> c, PersonPositionDuration p2) {
+                    return Optional.ofNullable(c.get(p2.getPosition()))
+                            .filter(p1 -> p1.getDuration() >= p2.getDuration())
+                            .orElse(p2);
+                }
+
+                @Override
+                public BinaryOperator<Map<String, PersonPositionDuration>> combiner() {
+                    return this::combine;
+                }
+
+                private Map<String, PersonPositionDuration> combine(Map<String, PersonPositionDuration> m1,
+                                                                    Map<String, PersonPositionDuration> m2) {
+                    m1.putAll(m2.entrySet().stream()
+                            .filter(e ->
+                                    !m1.containsKey(e.getKey())
+                                    || m1.get(e.getKey()).getDuration() < e.getValue().getDuration()
+                            ).collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
+                    return m1;
+                }
+
+                @Override
+                public Function<Map<String, PersonPositionDuration>, Map<String, Person>> finisher() {
+                    return m -> m.entrySet().stream()
+                            .collect(toMap(Map.Entry::getKey, e -> e.getValue().getPerson()));
+                }
+
+                @Override
+                public Set<Characteristics> characteristics() {
+                    return Collections.emptySet();
+                }
+            };
+
+
+
+    private Stream<PersonPositionDuration> getPersonPositionDuration(Employee employee) {
+        return employee.getJobHistory().stream()
+                .map(j -> new PersonPositionDuration(employee.getPerson(), j.getPosition(), j.getDuration()));
     }
 
     @Test
