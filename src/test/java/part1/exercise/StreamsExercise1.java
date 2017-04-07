@@ -15,6 +15,7 @@ import static data.Generator.generateEmployeeList;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
+import static junit.framework.TestCase.assertEquals;
 
 public class StreamsExercise1 {
     // https://youtu.be/kxgo7Y4cdA8 Сергей Куксенко и Алексей Шипилёв — Через тернии к лямбдам, часть 1
@@ -25,14 +26,42 @@ public class StreamsExercise1 {
 
     @Test
     public void getAllEpamEmployees() {
-        List<Person> epamEmployees = null;// TODO all persons with experience in epam
-        throw new UnsupportedOperationException();
+        final List<Employee> employees = generateEmployeeList();
+
+        List<Employee> expected = new ArrayList<>();
+
+        for (Employee e : employees) {
+            for (JobHistoryEntry j : e.getJobHistory()) {
+                if (j.getEmployer().equals("epam")) {
+                    expected.add(e);
+                }
+            }
+        }
+
+        List<Employee> result = employees.stream()
+                .filter(emp -> emp.getJobHistory().stream()
+                        .map(JobHistoryEntry::getEmployer)
+                        .anyMatch(e -> e.equals("epam")))
+                .collect(toList());
+        assertEquals(expected, result);
     }
 
     @Test
     public void getEmployeesStartedFromEpam() {
-        List<Person> epamEmployees = null;// TODO all persons with first experience in epam
-        throw new UnsupportedOperationException();
+        final List<Employee> employees = generateEmployeeList();
+
+        List<Employee> expected = new ArrayList<>();
+
+        for (Employee e : employees) {
+            if (e.getJobHistory().get(0).getEmployer().equals("epam"))
+                expected.add(e);
+        }
+
+        List<Employee> result = employees.stream()
+                .filter(emp -> emp.getJobHistory().get(0).getEmployer().equals("epam"))
+                .collect(toList());
+
+        assertEquals(expected, result);
     }
 
     @Test
@@ -49,11 +78,13 @@ public class StreamsExercise1 {
             }
         }
 
-        // TODO
-        throw new UnsupportedOperationException();
-
-        // int result = ???
-        // assertEquals(expected, result);
+        int result = employees.stream()
+                .flatMap(emp -> emp.getJobHistory().stream())
+                .filter(job -> job.getEmployer().equals("epam"))
+                .mapToInt(JobHistoryEntry::getDuration)
+                .reduce((e1, e2) -> e1 + e2)
+                .orElse(0);
+        assertEquals(expected, result);
     }
 
 }
