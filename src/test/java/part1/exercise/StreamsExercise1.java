@@ -28,21 +28,24 @@ public class StreamsExercise1 {
     public void getAllEpamEmployees() {
         final List<Employee> employees = generateEmployeeList();
 
-        List<Employee> expected = new ArrayList<>();
+        List<Person> expected = new ArrayList<>();
 
         for (Employee e : employees) {
             for (JobHistoryEntry j : e.getJobHistory()) {
                 if (j.getEmployer().equals("epam")) {
-                    expected.add(e);
+                    expected.add(e.getPerson());
+                    break;
                 }
             }
         }
 
-        List<Employee> result = employees.stream()
+        List<Person> result = employees.stream()
                 .filter(emp -> emp.getJobHistory().stream()
                         .map(JobHistoryEntry::getEmployer)
                         .anyMatch(e -> e.equals("epam")))
+                .map(Employee::getPerson)
                 .collect(toList());
+
         assertEquals(expected, result);
     }
 
@@ -50,15 +53,16 @@ public class StreamsExercise1 {
     public void getEmployeesStartedFromEpam() {
         final List<Employee> employees = generateEmployeeList();
 
-        List<Employee> expected = new ArrayList<>();
+        List<Person> expected = new ArrayList<>();
 
         for (Employee e : employees) {
             if (e.getJobHistory().get(0).getEmployer().equals("epam"))
-                expected.add(e);
+                expected.add(e.getPerson());
         }
 
-        List<Employee> result = employees.stream()
+        List<Person> result = employees.stream()
                 .filter(emp -> emp.getJobHistory().get(0).getEmployer().equals("epam"))
+                .map(Employee::getPerson)
                 .collect(toList());
 
         assertEquals(expected, result);
