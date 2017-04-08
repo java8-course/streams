@@ -15,6 +15,7 @@ import static data.Generator.generateEmployeeList;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
+import static org.junit.Assert.assertEquals;
 
 public class StreamsExercise1 {
     // https://youtu.be/kxgo7Y4cdA8 Сергей Куксенко и Алексей Шипилёв — Через тернии к лямбдам, часть 1
@@ -50,10 +51,14 @@ public class StreamsExercise1 {
         }
 
         // TODO
-        throw new UnsupportedOperationException();
+        final int result = employees.stream()
+                .map(t -> t.getJobHistory())
+                .flatMap(t -> t.stream())
+                .filter(t -> t.getEmployer().equals("epam"))
+                .mapToInt(t -> t.getDuration())
+                .sum();
 
-        // int result = ???
-        // assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
 }
