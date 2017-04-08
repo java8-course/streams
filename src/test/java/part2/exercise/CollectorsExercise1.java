@@ -156,14 +156,29 @@ public class CollectorsExercise1 {
     public void getTheCoolestOne2() {
         final Map<String, Person> coolestByPosition = getCoolestByPosition2(getEmployees());
 
+        Person expected = new Person("John", "Doe", 30);
+
+        assertThat(coolestByPosition.get("QA"), equalTo(expected));
         coolestByPosition.forEach((position, person) -> System.out.println(position + " -> " + person));
     }
 
-    // With the longest sum duration on this position
-    // { John Doe, [{dev, google, 4}, {dev, epam, 4}] } предпочтительнее, чем { A B, [{dev, google, 6}, {QA, epam, 100}]}
     private Map<String, Person> getCoolestByPosition2(List<Employee> employees) {
-        // TODO
-        throw new UnsupportedOperationException();
+        return employees.stream()
+                .flatMap(this::getAbsolutePersonPositionDuration)
+                .collect(groupingBy(PersonPositionDuration::getPosition,
+                        collectingAndThen(
+                                maxBy(Comparator.comparing(PersonPositionDuration::getDuration)),
+                                ppd -> ppd.get().getPerson()
+                        )));
+    }
+
+    private Stream<PersonPositionDuration> getAbsolutePersonPositionDuration(Employee employee) {
+        return employee.getJobHistory().stream()
+                .collect(groupingBy(JobHistoryEntry::getPosition,
+                        summingInt(JobHistoryEntry::getDuration)))
+                .entrySet()
+                .stream()
+                .map(e -> new PersonPositionDuration(employee.getPerson(), e.getKey(), e.getValue()));
     }
 
     private List<Employee> getEmployees() {
@@ -232,7 +247,7 @@ public class CollectorsExercise1 {
                         new Person("John", "Doe", 30),
                         Arrays.asList(
                                 new JobHistoryEntry(4, "QA", "yandex"),
-                                new JobHistoryEntry(2, "QA", "epam"),
+                                new JobHistoryEntry(4, "QA", "epam"),
                                 new JobHistoryEntry(5, "dev", "abc")
                         )),
                 new Employee(
