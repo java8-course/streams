@@ -7,15 +7,6 @@ import data.Person;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.*;
 
@@ -75,7 +66,7 @@ public class CollectorsExercise1 {
 //                .collect(toMap(Map.Entry::getKey, e -> e.getValue().getPerson()));
 //
 //        return result;
-//
+
 //        return employees.stream()
 //                .flatMap(emp -> emp.getJobHistory()
 //                        .stream()
@@ -132,8 +123,28 @@ public class CollectorsExercise1 {
     // With the longest sum duration on this position
     // { John Doe, [{dev, google, 4}, {dev, epam, 4}] } предпочтительнее, чем { A B, [{dev, google, 6}, {QA, epam, 100}]}
     private Map<String, Person> getCoolestByPosition2(List<Employee> employees) {
-        // TODO
-        throw new UnsupportedOperationException();
+
+        Map<String, Person> result = employees.stream()
+                .flatMap(emp -> emp.getJobHistory()
+                        .stream()
+                        .map(job -> new Job(emp.getPerson(), job.getEmployer(), job.getDuration(), job.getPosition())))
+                .collect(groupingBy(Job::getPosition,
+                        collectingAndThen(
+                                groupingBy(Job::getPerson, reducing(
+                                        (p1, p2) -> new Job(p1.getPerson(), p1.getEmployer(),
+                                                p1.getDuration() + p2.getDuration(), p1.getPosition()))),
+                                CollectorsExercise1::findMaxJob)));
+
+        return result;
+    }
+
+    private static Person findMaxJob(Map<Person, Optional<Job>> map) {
+        return map.entrySet()
+                .stream()
+                .max(Comparator.comparing(ent -> ent.getValue().get().getDuration()))
+                .get()
+                .getKey();
+
     }
 
     private List<Employee> getEmployees() {
@@ -157,10 +168,10 @@ public class CollectorsExercise1 {
                                 new JobHistoryEntry(60, "QA", "epam")
                         )),
                 new Employee(
-                        new Person("John", "Galt", 23),
+                        new Person("John", "GaltTotal", 23),
                         Arrays.asList(
-                                new JobHistoryEntry(3, "dev", "epam"),
-                                new JobHistoryEntry(2, "dev", "google")
+                                new JobHistoryEntry(30, "dev", "epam"),
+                                new JobHistoryEntry(20, "dev", "google")
                         )),
                 new Employee(
                         new Person("John", "Doe", 24),
@@ -181,16 +192,17 @@ public class CollectorsExercise1 {
                                 new JobHistoryEntry(1, "dev", "google")
                         )),
                 new Employee(
-                        new Person("Bob", "Doe", 27),
+                        new Person("Bob", "DoeTotal", 27),
                         Arrays.asList(
-                                new JobHistoryEntry(4, "QA", "yandex"),
-                                new JobHistoryEntry(2, "QA", "epam"),
+                                new JobHistoryEntry(40, "QA", "yandex"),
+                                new JobHistoryEntry(25, "QA", "epam"),
                                 new JobHistoryEntry(2, "dev", "abc")
                         )),
                 new Employee(
-                        new Person("John", "White", 28),
-                        Collections.singletonList(
-                                new JobHistoryEntry(6, "BA", "epam")
+                        new Person("John", "WhiteTotal", 28),
+                        Arrays.asList(
+                                new JobHistoryEntry(26, "BA", "epam"),
+                                new JobHistoryEntry(36, "BA", "epam")
                         )),
                 new Employee(
                         new Person("John", "Galt", 29),
