@@ -28,9 +28,9 @@ public class StreamsExercise1 {
 
         for (Employee employee : employees) {
             for (JobHistoryEntry entry : employee.getJobHistory()) {
-                if(entry.getEmployer().equals("epam")) {
-                    if(!expected.contains(employee.getPerson()))
-                    expected.add(employee.getPerson());
+                if (entry.getEmployer().equals("epam")) {
+                    if (!expected.contains(employee.getPerson()))
+                        expected.add(employee.getPerson());
                 }
             }
         }
@@ -39,41 +39,30 @@ public class StreamsExercise1 {
                 .map(StreamsExercise1::employeeToPairs)
                 .flatMap(Function.identity())
                 .filter(t -> t.getEmployer().equals("epam"))
-                .map(t -> t.getPerson())
+                .map(PersonEmployerPair::getPerson)
                 .distinct()
                 .collect(Collectors.toList());
         assertEquals(expected, epamEmployees);
 
     }
 
-    public static class PersonEmployerPair {
-        private final Person person;
-        private final String employer;
-
-        public PersonEmployerPair(Person person, String employer) {
-            this.person = person;
-            this.employer = employer;
-        }
-
-        public Person getPerson() {
-            return person;
-        }
-
-        public String getEmployer() {
-            return employer;
-        }
-    }
-
-    private static Stream<PersonEmployerPair> employeeToPairs(Employee employee) {
-        return employee.getJobHistory().stream()
-                .map(JobHistoryEntry::getEmployer)
-                .map(p -> new PersonEmployerPair(employee.getPerson(), p));
-    }
-
     @Test
     public void getEmployeesStartedFromEpam() {
-        List<Person> epamEmployees = null;// TODO all persons with first experience in epam
-        throw new UnsupportedOperationException();
+        List<Employee> employees = generateEmployeeList();
+        List<Person> expected = new ArrayList<>();
+
+        for (Employee employee : employees) {
+            if (employee.getJobHistory().get(0).getEmployer().equals("epam")) {
+                expected.add(employee.getPerson());
+            }
+        }
+
+        List<Person> epamEmployees = employees.stream()
+                .filter(t -> t.getJobHistory().get(0).getEmployer().equals("epam"))
+                .map(Employee::getPerson)
+                .collect(Collectors.toList());
+
+        assertEquals(expected, epamEmployees);
     }
 
     @Test
@@ -99,6 +88,30 @@ public class StreamsExercise1 {
                 .sum();
 
         assertEquals(expected, result);
+    }
+
+    private static Stream<PersonEmployerPair> employeeToPairs(Employee employee) {
+        return employee.getJobHistory().stream()
+                .map(JobHistoryEntry::getEmployer)
+                .map(p -> new PersonEmployerPair(employee.getPerson(), p));
+    }
+
+    public static class PersonEmployerPair {
+        private final Person person;
+        private final String employer;
+
+        public PersonEmployerPair(Person person, String employer) {
+            this.person = person;
+            this.employer = employer;
+        }
+
+        public Person getPerson() {
+            return person;
+        }
+
+        public String getEmployer() {
+            return employer;
+        }
     }
 
 }
