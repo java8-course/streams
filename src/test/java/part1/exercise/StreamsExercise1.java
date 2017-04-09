@@ -5,16 +5,13 @@ import data.JobHistoryEntry;
 import data.Person;
 import org.junit.Test;
 
-import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static data.Generator.generateEmployeeList;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 
 public class StreamsExercise1 {
@@ -26,8 +23,51 @@ public class StreamsExercise1 {
 
     @Test
     public void getAllEpamEmployees() {
-        List<Person> epamEmployees = null;// TODO all persons with experience in epam
-        throw new UnsupportedOperationException();
+        List<Employee> employees = generateEmployeeList();
+        List<Person> expected = new ArrayList<>();
+
+        for (Employee employee : employees) {
+            for (JobHistoryEntry entry : employee.getJobHistory()) {
+                if(entry.getEmployer().equals("epam")) {
+                    if(!expected.contains(employee.getPerson()))
+                    expected.add(employee.getPerson());
+                }
+            }
+        }
+        List<Person> epamEmployees = employees
+                .stream()
+                .map(StreamsExercise1::employeeToPairs)
+                .flatMap(Function.identity())
+                .filter(t -> t.getEmployer().equals("epam"))
+                .map(t -> t.getPerson())
+                .distinct()
+                .collect(Collectors.toList());
+        assertEquals(expected, epamEmployees);
+
+    }
+
+    public static class PersonEmployerPair {
+        private final Person person;
+        private final String employer;
+
+        public PersonEmployerPair(Person person, String employer) {
+            this.person = person;
+            this.employer = employer;
+        }
+
+        public Person getPerson() {
+            return person;
+        }
+
+        public String getEmployer() {
+            return employer;
+        }
+    }
+
+    private static Stream<PersonEmployerPair> employeeToPairs(Employee employee) {
+        return employee.getJobHistory().stream()
+                .map(JobHistoryEntry::getEmployer)
+                .map(p -> new PersonEmployerPair(employee.getPerson(), p));
     }
 
     @Test
