@@ -26,14 +26,21 @@ public class StreamsExercise1 {
 
     @Test
     public void getAllEpamEmployees() {
-        List<Person> epamEmployees = null;// TODO all persons with experience in epam
-        throw new UnsupportedOperationException();
+        List<Person> epamEmployees = generateEmployeeList().stream()
+                .filter(employee -> employee.getJobHistory().stream()
+                        .map(JobHistoryEntry::getEmployer)
+                        .anyMatch(s -> s.equals("epam")))
+                .map(Employee::getPerson)
+                .collect(toList());
+
     }
 
     @Test
     public void getEmployeesStartedFromEpam() {
-        List<Person> epamEmployees = null;// TODO all persons with first experience in epam
-        throw new UnsupportedOperationException();
+        List<Person> epamEmployees = generateEmployeeList().stream()
+                .filter(employee -> employee.getJobHistory().get(0).getEmployer().equals("epam"))
+                .map(Employee::getPerson)
+                .collect(toList());
     }
 
     @Test
