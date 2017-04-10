@@ -3,6 +3,7 @@ package part2.exercise;
 import data.Employee;
 import data.JobHistoryEntry;
 import data.Person;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
@@ -132,7 +133,7 @@ public class CollectorsExercise2 {
         }
     }
 
-    private static class MapPair {
+    public static class MapPair {
         private final Map<String, Key> keyById;
         private final Map<String, List<Value>> valueById;
 
@@ -183,73 +184,19 @@ public class CollectorsExercise2 {
                             return result;
                         }));
 
-        // В каждом Map.Entry id ключа должно совпадать с keyId для каждого значения в списке
-        final Map<Key, List<Value>> keyValuesMap1 =
-                valuesMap1.entrySet()
-                        .stream()
-                        .collect(toMap(ent -> keyMap1.get(ent.getKey()), Map.Entry::getValue));
-
-        keyValuesMap1.forEach((key, value) -> System.out.println(key.getId() + " -> " + value.get(0).getKeyId()));
+        final Map<Key, List<Value>> keyValuesMap1 = getResultMap(keyMap1, valuesMap1);
 
         // В 1 проход в 2 Map с использованием MapPair и mapMerger
         final MapPair res2 = pairs.stream()
-                .collect(new Collector<Pair, MapPair, MapPair>() {
-                    @Override
-                    public Supplier<MapPair> supplier() {
-                        return MapPair::new;
-                    }
+                .collect(new KeyValueMappingCollector());
 
-                    @Override
-                    public BiConsumer<MapPair, Pair> accumulator() {
-                        return (maps, pair) -> {
-                            maps.getKeyById().put(pair.getKey().getId(), pair.getKey());
-                            maps.getValueById().merge(pair.getKey().getId(), Collections.singletonList(pair.getValue()), (v1, v2) -> {
-                                List<Value> result = new ArrayList<>();
-                                result.addAll(v1);
-                                result.addAll(v2);
-                                return result;
-                            });
-                        };
-                    }
+        final Map<Key, List<Value>> keyValuesMap2 = getResultMap(res2.getKeyById(), res2.getValueById());
 
-                    @Override
-                    public BinaryOperator<MapPair> combiner() {
-                        return (maps1, maps2) -> {
-                            BinaryOperator<Map<String, List<Value>>> mergeValues = mapMerger((v1, v2) -> {
-                                v1.addAll(v2);
-                                return v2;
-                            });
-
-                            Map<String, Key> keys = maps1.getKeyById();
-                            keys.putAll(maps2.getKeyById());
-                            Map<String, List<Value>> values = mergeValues.apply(maps1.getValueById(), maps2.getValueById());
-                            return new MapPair(keys, values);
-                        };
-                    }
-
-                    @Override
-                    public Function<MapPair, MapPair> finisher() {
-                        return Function.identity();
-                    }
-
-                    @Override
-                    public Set<Characteristics> characteristics() {
-                        return Collections.unmodifiableSet(EnumSet.of(
-                                Characteristics.UNORDERED,
-                                Characteristics.IDENTITY_FINISH));
-                    }
-                });
-
-        final Map<String, Key> keyMap2 = res2.getKeyById();
-        final Map<String, List<Value>> valuesMap2 = res2.getValueById();
-
-        final Map<Key, List<Value>> keyValuesMap2 = valuesMap1.entrySet()
-                .stream()
-                .collect(toMap(ent -> keyMap1.get(ent.getKey()), Map.Entry::getValue));
-
-        keyValuesMap1.forEach((k, v) -> {
+        keyValuesMap2.forEach((k, v) -> {
             System.out.println(k.getId() + " -> " + v.stream().map(Value::getKeyId).collect(toList()));
         });
+
+        Assert.assertEquals(keyValuesMap1, keyValuesMap2);
 
         // Получение результата сразу:
 
@@ -289,6 +236,61 @@ public class CollectorsExercise2 {
 //        final Map<Key, List<Value>> keyValuesMap3 = res3.getSubResult();
 
         // compare results
+    }
+
+    public Map<Key, List<Value>> getResultMap(Map<String, Key> keyMap1, Map<String, List<Value>> valuesMap1) {
+        return valuesMap1.entrySet()
+                        .stream()
+                        .collect(toMap(ent -> keyMap1.get(ent.getKey()), Map.Entry::getValue));
+    }
+
+    public static class KeyValueMappingCollector implements Collector<Pair, MapPair, MapPair> {
+
+        @Override
+        public Supplier<MapPair> supplier() {
+            return MapPair::new;
+        }
+
+        @Override
+        public BiConsumer<MapPair, Pair> accumulator() {
+            return (maps, pair) -> {
+                maps.getKeyById().put(pair.getKey().getId(), pair.getKey());
+                maps.getValueById().merge(pair.getKey().getId(), Collections.singletonList(pair.getValue()), (v1, v2) -> {
+                    List<Value> result = new ArrayList<>();
+                    result.addAll(v1);
+                    result.addAll(v2);
+                    return result;
+                });
+            };
+        }
+
+        @Override
+        public BinaryOperator<MapPair> combiner() {
+            return (maps1, maps2) -> {
+                BinaryOperator<Map<String, List<Value>>> mergeValues = mapMerger((v1, v2) -> {
+                    v1.addAll(v2);
+                    return v2;
+                });
+
+                Map<String, Key> keys = maps1.getKeyById();
+                keys.putAll(maps2.getKeyById());
+                Map<String, List<Value>> values = mergeValues.apply(maps1.getValueById(), maps2.getValueById());
+                return new MapPair(keys, values);
+            };
+        }
+
+        @Override
+        public Function<MapPair, MapPair> finisher() {
+            return Function.identity();
+        }
+
+        @Override
+        public Set<Characteristics> characteristics() {
+            return Collections.unmodifiableSet(EnumSet.of(
+                    Characteristics.UNORDERED,
+                    Characteristics.IDENTITY_FINISH));
+        }
+
     }
 
 }

@@ -15,19 +15,22 @@ public class LambdaExercise {
     public void supply() {
         final Person person = new Person("John", "Galt", 30);
 
-        final Supplier<Person> getPerson = null; // TODO return person from Supplier
+        final Supplier<Person> getPerson = () -> person;
 
         assertEquals(person, getPerson.get());
     }
 
     @Test
     public void function() {
-        final Function<Person, String> getPersonName1 = null; // TODO get the name of person using expression lambda
+        final Function<Person, String> getPersonName1 = (p) -> p.getFirstName();
 
-        final Function<Person, String> getPersonName2 = null; // TODO get the name of person using method reference
+        final Function<Person, String> getPersonName2 = Person::getFirstName;
 
         // TODO get the name of person and log it to System.out using statement lambda: {}
-        final Function<Person, String> getPersonNameAndLogIt = null;
+        final Function<Person, String> getPersonNameAndLogIt = (p) -> {
+            System.out.println(p.getFirstName());
+            return p.getFirstName();
+        };
 
         final Person person = new Person("John", "Galt", 30);
 
