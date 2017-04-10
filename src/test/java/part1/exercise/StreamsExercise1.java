@@ -13,9 +13,9 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static data.Generator.generateEmployeeList;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class StreamsExercise1 {
     // https://youtu.be/kxgo7Y4cdA8 Сергей Куксенко и Алексей Шипилёв — Через тернии к лямбдам, часть 1
@@ -34,8 +34,19 @@ public class StreamsExercise1 {
                 .map(Employee::getPerson)
                 .collect(toList());
 
-        System.out.println(employeeList);
-        System.out.println(personsWithExperienceInEpam);
+        List<Person> expected = new ArrayList<>();
+        for (Employee employee : employeeList) {
+            inner:
+            for (JobHistoryEntry jobHistoryEntry : employee.getJobHistory()) {
+                if (jobHistoryEntry.getEmployer().equals("epam")) {
+                    expected.add(employee.getPerson());
+                    break inner;
+                }
+            }
+        }
+
+        assertEquals(personsWithExperienceInEpam.size(), expected.size());
+        assertTrue(personsWithExperienceInEpam.containsAll(expected));
     }
 
     @Test
@@ -49,8 +60,16 @@ public class StreamsExercise1 {
                 .map(Employee::getPerson)
                 .collect(toList());
 
-        System.out.println(employeeList);
-        System.out.println(personsWithFirstExperienceInEpam);
+
+        List<Person> expected = new ArrayList<>();
+        for (Employee employee : employeeList) {
+            List<JobHistoryEntry> jobHistory = employee.getJobHistory();
+            if (!jobHistory.isEmpty() && jobHistory.get(0).getEmployer().equals("epam"))
+                expected.add(employee.getPerson());
+        }
+
+        assertEquals(personsWithFirstExperienceInEpam.size(), expected.size());
+        assertTrue(personsWithFirstExperienceInEpam.containsAll(expected));
     }
 
     @Test
@@ -68,10 +87,13 @@ public class StreamsExercise1 {
         }
 
         // TODO
-        throw new UnsupportedOperationException();
+        int result = employees.stream()
+                .flatMap(e -> e.getJobHistory().stream())
+                .filter(j -> j.getEmployer().equals("epam"))
+                .map(j -> j.getDuration())
+                .reduce(0, (a, b) -> a + b);
 
-        // int result = ???
-        // assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
 }
