@@ -1,6 +1,7 @@
 package part1.exercise;
 
 import data.Employee;
+import data.Generator;
 import data.JobHistoryEntry;
 import data.Person;
 import org.junit.Test;
@@ -25,8 +26,15 @@ public class StreamsExercise1 {
 
     @Test
     public void getAllEpamEmployees() {
-        List<Person> epamEmployees = null;// TODO all persons with experience in epam
-        throw new UnsupportedOperationException();
+        // TODO all persons with experience in epam
+        List<Employee> employeeList = Generator.generateEmployeeList();
+        List<Person> personsWithExperienceInEpam = employeeList.stream()
+                .filter(e -> e.getJobHistory().stream().anyMatch(j -> j.getEmployer().equals("epam")))
+                .map(Employee::getPerson)
+                .collect(toList());
+
+        System.out.println(employeeList);
+        System.out.println(personsWithExperienceInEpam);
     }
 
     @Test
