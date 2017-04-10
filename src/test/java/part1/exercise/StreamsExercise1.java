@@ -29,7 +29,8 @@ public class StreamsExercise1 {
         // TODO all persons with experience in epam
         List<Employee> employeeList = Generator.generateEmployeeList();
         List<Person> personsWithExperienceInEpam = employeeList.stream()
-                .filter(e -> e.getJobHistory().stream().anyMatch(j -> j.getEmployer().equals("epam")))
+                .filter(e -> e.getJobHistory().stream()
+                        .anyMatch(j -> j.getEmployer().equals("epam")))
                 .map(Employee::getPerson)
                 .collect(toList());
 
@@ -39,8 +40,17 @@ public class StreamsExercise1 {
 
     @Test
     public void getEmployeesStartedFromEpam() {
-        List<Person> epamEmployees = null;// TODO all persons with first experience in epam
-        throw new UnsupportedOperationException();
+        // TODO all persons with first experience in epam
+        List<Employee> employeeList = Generator.generateEmployeeList();
+        List<Person> personsWithFirstExperienceInEpam = employeeList.stream()
+                .filter(
+                        e -> !e.getJobHistory().isEmpty()
+                                && e.getJobHistory().get(0).getEmployer().equals("epam"))
+                .map(Employee::getPerson)
+                .collect(toList());
+
+        System.out.println(employeeList);
+        System.out.println(personsWithFirstExperienceInEpam);
     }
 
     @Test
