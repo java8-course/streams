@@ -4,12 +4,10 @@ import data.Employee;
 import data.JobHistoryEntry;
 import data.Person;
 import org.junit.Test;
+import data.Job;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static data.Generator.generateEmployeeList;
 import static java.util.stream.Collectors.*;
 import static org.junit.Assert.assertEquals;
 
@@ -29,10 +27,10 @@ public class StreamsExercise2 {
                     Person per = emp.getPerson();
                     return emp.getJobHistory()
                             .stream()
-                            .map(job -> new PersonEmployerPair(per, job.getEmployer(), job.getDuration()));
+                            .map(job -> new Job(per, job.getEmployer(), job.getDuration(), job.getPosition()));
                 })
-                .collect(groupingBy(PersonEmployerPair::getEmployer,
-                            mapping(PersonEmployerPair::getPerson, toList())));
+                .collect(groupingBy(Job::getEmployer,
+                            mapping(Job::getPerson, toList())));
 
         assertEquals(Collections.singletonList(new Person("Bob", "White", 31)),
                 employersStuffLists.get("uralvagonzavod"));
@@ -52,12 +50,11 @@ public class StreamsExercise2 {
                     Person per = emp.getPerson();
                     return emp.getJobHistory()
                             .stream()
-                            .map(job -> new PersonEmployerPair(per, job.getEmployer(), job.getDuration()));
+                            .map(job -> new Job(per, job.getEmployer(), job.getDuration(), job.getPosition()));
                 })
-                .collect(groupingBy(PersonEmployerPair::getEmployer,
+                .collect(groupingBy(Job::getEmployer,
                         collectingAndThen(
-                                maxBy(Comparator.comparing(el -> el.duration)), res -> res.get().getPerson())));
-
+                                maxBy(Comparator.comparing(el -> el.getDuration())), res -> res.get().getPerson())));
 
         assertEquals(new Person("John", "White", 28), employeesIndex.get("epam"));
     }
@@ -139,31 +136,6 @@ public class StreamsExercise2 {
                                 new JobHistoryEntry(1, "QA", "uralvagonzavod")
                         ))
         );
-    }
-
-    private class PersonEmployerPair {
-        private final Person person;
-
-        public Person getPerson() {
-            return person;
-        }
-
-        public String getEmployer() {
-            return employer;
-        }
-
-        public int getDuration() {
-            return duration;
-        }
-
-        private final String employer;
-        private final int duration;
-
-        private PersonEmployerPair(Person person, String employer, int duration) {
-            this.person = person;
-            this.employer = employer;
-            this.duration = duration;
-        }
     }
 
 }

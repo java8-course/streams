@@ -6,13 +6,6 @@ public class Job {
     private final int duration;
     private final String position;
 
-    public Job(Person person, String employer, int duration, String position) {
-        this.person = person;
-        this.employer = employer;
-        this.duration = duration;
-        this.position = position;
-    }
-
     public Person getPerson() {
         return person;
     }
@@ -27,5 +20,13 @@ public class Job {
 
     public String getPosition() {
         return position;
+    }
+
+
+    public Job(Person person, String employer, int duration, String position) {
+        this.person = person;
+        this.employer = employer;
+        this.duration = duration;
+        this.position = position;
     }
 }

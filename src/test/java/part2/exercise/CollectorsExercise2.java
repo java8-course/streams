@@ -180,7 +180,7 @@ public class CollectorsExercise2 {
                             List<Value> result = new ArrayList<>();
                             result.addAll(v1);
                             result.addAll(v2);
-                            return v1;
+                            return result;
                         }));
 
         // В каждом Map.Entry id ключа должно совпадать с keyId для каждого значения в списке
@@ -247,7 +247,7 @@ public class CollectorsExercise2 {
                 .stream()
                 .collect(toMap(ent -> keyMap1.get(ent.getKey()), Map.Entry::getValue));
 
-        keyValuesMap2.forEach((k, v) -> {
+        keyValuesMap1.forEach((k, v) -> {
             System.out.println(k.getId() + " -> " + v.stream().map(Value::getKeyId).collect(toList()));
         });
 

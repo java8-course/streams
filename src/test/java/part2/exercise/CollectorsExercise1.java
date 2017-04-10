@@ -131,8 +131,19 @@ public class CollectorsExercise1 {
     // With the longest sum duration on this position
     // { John Doe, [{dev, google, 4}, {dev, epam, 4}] } предпочтительнее, чем { A B, [{dev, google, 6}, {QA, epam, 100}]}
     private Map<String, Person> getCoolestByPosition2(List<Employee> employees) {
-        // TODO
-        throw new UnsupportedOperationException();
+        Map<String, Person> result =
+                employees.stream()
+                        .flatMap(emp -> emp.getJobHistory()
+                                .stream()
+                                .map(job -> new Job(emp.getPerson(), job.getEmployer(), job.getDuration(), job.getPosition())))
+                        .collect(groupingBy(Job::getPosition,
+                                collectingAndThen(
+                                        reducing(
+                                                (j1, j2) -> new Job(j1.getPerson(), j1.getEmployer(),
+                                                        j1.getDuration() + j2.getDuration(), j1.getPosition())),
+                                        j -> j.get().getPerson())));
+
+        return result;
     }
 
     private List<Employee> getEmployees() {
@@ -156,10 +167,10 @@ public class CollectorsExercise1 {
                                 new JobHistoryEntry(60, "QA", "epam")
                         )),
                 new Employee(
-                        new Person("John", "Galt", 23),
+                        new Person("John", "GaltLong", 23),
                         Arrays.asList(
-                                new JobHistoryEntry(3, "dev", "epam"),
-                                new JobHistoryEntry(2, "dev", "google")
+                                new JobHistoryEntry(30, "dev", "epam"),
+                                new JobHistoryEntry(20, "dev", "google")
                         )),
                 new Employee(
                         new Person("John", "Doe", 24),
@@ -180,16 +191,17 @@ public class CollectorsExercise1 {
                                 new JobHistoryEntry(1, "dev", "google")
                         )),
                 new Employee(
-                        new Person("Bob", "Doe", 27),
+                        new Person("Bob", "DoeLong", 27),
                         Arrays.asList(
-                                new JobHistoryEntry(4, "QA", "yandex"),
-                                new JobHistoryEntry(2, "QA", "epam"),
+                                new JobHistoryEntry(40, "QA", "yandex"),
+                                new JobHistoryEntry(25, "QA", "epam"),
                                 new JobHistoryEntry(2, "dev", "abc")
                         )),
                 new Employee(
-                        new Person("John", "White", 28),
-                        Collections.singletonList(
-                                new JobHistoryEntry(6, "BA", "epam")
+                        new Person("John", "WhiteLong", 28),
+                        Arrays.asList(
+                                new JobHistoryEntry(30, "BA", "epam"),
+                                new JobHistoryEntry(30, "BA", "noname")
                         )),
                 new Employee(
                         new Person("John", "Galt", 29),
