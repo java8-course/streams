@@ -6,20 +6,14 @@ import data.Person;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.maxBy;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
+import static org.junit.Assert.assertEquals;
 
 public class CollectorsExercise1 {
 
@@ -86,14 +80,39 @@ public class CollectorsExercise1 {
     public void getTheCoolestOne2() {
         final Map<String, Person> coolestByPosition = getCoolestByPosition2(getEmployees());
 
-        coolestByPosition.forEach((position, person) -> System.out.println(position + " -> " + person));
+        assertEquals(new Person("John", "Doe", 30), coolestByPosition.get("QA"));
+        assertEquals(new Person("John", "Galt", 26), coolestByPosition.get("dev"));
+        assertEquals(new Person("John", "Doe", 24), coolestByPosition.get("BA"));
     }
 
     // With the longest sum duration on this position
     // { John Doe, [{dev, google, 4}, {dev, epam, 4}] } предпочтительнее, чем { A B, [{dev, google, 6}, {QA, epam, 100}]}
     private Map<String, Person> getCoolestByPosition2(List<Employee> employees) {
-        // TODO
-        throw new UnsupportedOperationException();
+        Map<String, List<PersonPositionDuration>> map = employees.stream()
+                .map(employee -> employee.withJobHistory(
+                        getJobHistorySumDurationByPosition(employee)))
+
+                .flatMap(e -> e.getJobHistory().stream()
+                        .map(j -> new PersonPositionDuration(e.getPerson(), j.getPosition(), j.getDuration())))
+
+                .collect(groupingBy(PersonPositionDuration::getPosition));
+
+        return map.entrySet().stream()
+                .collect(toMap(Map.Entry::getKey,
+                        e -> e.getValue().stream()
+                                .reduce((ppd1, ppd2) -> ppd1.getDuration() > ppd2.getDuration() ? ppd1 : ppd2)
+                                .get()
+                                .getPerson()));
+    }
+
+    private List<JobHistoryEntry> getJobHistorySumDurationByPosition(Employee employee) {
+        Map<String, Integer> map = employee.getJobHistory().stream()
+                .collect(groupingBy(JobHistoryEntry::getPosition,
+                        Collectors.summingInt(JobHistoryEntry::getDuration)));
+
+        return map.entrySet().stream()
+                .map(e -> new JobHistoryEntry(e.getValue(), e.getKey(), null))
+                .collect(toList());
     }
 
     private List<Employee> getEmployees() {
@@ -126,8 +145,9 @@ public class CollectorsExercise1 {
                         new Person("John", "Doe", 24),
                         Arrays.asList(
                                 new JobHistoryEntry(4, "QA", "yandex"),
-                                new JobHistoryEntry(2, "BA", "epam"),
-                                new JobHistoryEntry(2, "dev", "abc")
+                                new JobHistoryEntry(4, "BA", "epam"),
+                                new JobHistoryEntry(2, "dev", "abc"),
+                                new JobHistoryEntry(4, "BA", "google")
                         )),
                 new Employee(
                         new Person("John", "White", 25),
@@ -138,7 +158,7 @@ public class CollectorsExercise1 {
                         new Person("John", "Galt", 26),
                         Arrays.asList(
                                 new JobHistoryEntry(3, "dev", "epam"),
-                                new JobHistoryEntry(1, "dev", "google")
+                                new JobHistoryEntry(4, "dev", "google")
                         )),
                 new Employee(
                         new Person("Bob", "Doe", 27),
@@ -162,7 +182,7 @@ public class CollectorsExercise1 {
                         new Person("John", "Doe", 30),
                         Arrays.asList(
                                 new JobHistoryEntry(4, "QA", "yandex"),
-                                new JobHistoryEntry(2, "QA", "epam"),
+                                new JobHistoryEntry(4, "QA", "epam"),
                                 new JobHistoryEntry(5, "dev", "abc")
                         )),
                 new Employee(
