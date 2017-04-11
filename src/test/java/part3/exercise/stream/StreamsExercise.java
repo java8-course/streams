@@ -10,7 +10,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.*;
 import static org.junit.Assert.assertEquals;
 
 public class StreamsExercise {
@@ -19,17 +21,22 @@ public class StreamsExercise {
     public void getAllJobHistoryEntries() {
         final List<Employee> employees = getEmployees();
 
-        final List<JobHistoryEntry> jobHistoryEntries = null; // TODO
+        final List<JobHistoryEntry> jobHistoryEntries =
+                employees.stream()
+                .flatMap(e -> e.getJobHistory().stream())
+                .collect(toList());
 
         assertEquals(22, jobHistoryEntries.size());
     }
 
     @Test
     public void getSumDuration() {
-        // sum all durations for all persons
         final List<Employee> employees = getEmployees();
 
-        final int sumDurations = 0; // TODO
+        final int sumDurations = employees.stream()
+                .flatMap(e -> e.getJobHistory().stream())
+                .mapToInt(JobHistoryEntry::getDuration)
+                .sum();
 
         assertEquals(72, sumDurations);
     }
@@ -64,16 +71,29 @@ public class StreamsExercise {
     public void indexPersonsByEmployer1() {
         final List<Employee> employees = getEmployees();
 
-        final Map<String, List<PersonEmployer>> index = null; // TODO
+        final Map<String, List<PersonEmployer>> index = employees.stream()
+                .flatMap(this::getPersonEmployerPair)
+                .collect(groupingBy(PersonEmployer::getEmployer));
 
         assertEquals(11, index.get("epam").size());
+    }
+
+    private Stream<PersonEmployer> getPersonEmployerPair(Employee employee) {
+        return employee.getJobHistory().stream()
+                .map(j -> new PersonEmployer(employee.getPerson(), j.getEmployer()));
     }
 
     @Test
     public void indexPersonsByEmployer2() {
         final List<Employee> employees = getEmployees();
 
-        final Map<String, List<Person>> index = null; // TODO
+        final Map<String, List<Person>> index = employees.stream()
+                .flatMap(this::getPersonEmployerPair)
+                .collect(groupingBy(
+                        PersonEmployer::getEmployer,
+                        mapping(PersonEmployer::getPerson,
+                                toList())
+                ));
 
         assertEquals(11, index.get("epam").size());
     }

@@ -186,8 +186,6 @@ public class CollectorsExercise2 {
                         e -> valuesMap1.get(e.getKey()))
                 );
 
-
-        // В 1 проход в 2 Map с использованием MapPair и mapMerger
         final MapPair res2 = pairs.stream()
                 .collect(new Collector<Pair, MapPair, MapPair>() {
                     @Override
@@ -208,17 +206,19 @@ public class CollectorsExercise2 {
                     @Override
                     public BinaryOperator<MapPair> combiner() {
                         return (m1, m2) -> {
-                            m1.keyById = (Map<String, Key>) mapMerger(
-                                    (Key e1, Key e2) -> e2)
-                                    .apply(m1.getKeyById(), m2.getKeyById());
+                            BinaryOperator<Map<String, Key>> merger1 = mapMerger((e1, e2) -> e1);
+                            merger1.apply(m1.getKeyById(), m2.getKeyById());
 
-
+                            BinaryOperator<Map<String, List<Value>>> merger2 = mapMerger(
+                                    (e1, e2) -> {
+                                        e1.addAll(e2.stream()
+                                                .filter(e -> !e1.contains(e))
+                                                .collect(toList()));
+                                        return e1;
+                                    });
+                            merger2.apply(m1.getValueById(), m2.getValueById());
                             return m1;
                         };
-
-
-                        // TODO use mapMerger
-                        throw new UnsupportedOperationException();
                     }
 
                     @Override
@@ -237,10 +237,14 @@ public class CollectorsExercise2 {
         final Map<String, Key> keyMap2 = res2.getKeyById();
         final Map<String, List<Value>> valuesMap2 = res2.getValueById();
 
-        // final Map<Key, List<Value>> keyValuesMap2 = valueMap2.entrySet().stream()...
+        Map<Key, List<Value>> keyValuesMap2 = valuesMap2.entrySet().stream()
+                .collect(toMap(
+                        e -> keyMap2.get(e.getKey()),
+                        Map.Entry::getValue
+                ));
+
 
         // Получение результата сразу:
-
         final SubResult res3 = pairs.stream()
                 .collect(new Collector<Pair, SubResult, SubResult>() {
                     @Override
