@@ -26,7 +26,6 @@ public class LambdaExercise {
 
         final Function<Person, String> getPersonName2 = Person::getFirstName;
 
-        // TODO get the name of person and log it to System.out using statement lambda: {}
         final Function<Person, String> getPersonNameAndLogIt = (p) -> {
             System.out.println(p.getFirstName());
             return p.getFirstName();
@@ -41,19 +40,17 @@ public class LambdaExercise {
 
     @Test
     public void combineFunctions() {
-        final Function<Person, String> getPersonName = null; // TODO get the name of person
+        final Function<Person, String> getPersonName = Person::getFirstName;
 
         assertEquals("John", getPersonName.apply(new Person("John", "Galt", 30)));
 
-        final Function<String, Integer> getStringLength = null; // TODO get string length
+        final Function<String, Integer> getStringLength = String::length;
 
         assertEquals(Integer.valueOf(3), getStringLength.apply("ABC"));
 
-        // TODO get person name length using getPersonName and getStringLength without andThen
-        final Function<Person, Integer> getPersonNameLength1 = null;
+        final Function<Person, Integer> getPersonNameLength1 = p -> getStringLength.apply(getPersonName.apply(p));
 
-        // TODO get person name length using getPersonName and getStringLength with andThen
-        final Function<Person, Integer> getPersonNameLength2 = null;
+        final Function<Person, Integer> getPersonNameLength2 = getPersonName.andThen(getStringLength);
 
         final Person person = new Person("John", "Galt", 30);
 
@@ -71,22 +68,20 @@ public class LambdaExercise {
 
     // ((T -> R), (R -> boolean)) -> (T -> boolean)
     private <T, R> Predicate<T> combine(Function<T, R> f, Predicate<R> p) {
-        // TODO
-        throw new UnsupportedOperationException();
+        return v -> p.test(f.apply(v));
     }
 
     @Test
     public void methodReference() {
-        // TODO use only method reverences here.
-        final Person person = createPerson(null); // TODO
+        final Person person = createPerson(Person::new);
 
         assertEquals(new Person("John", "Galt", 66), person);
 
-        final Function<Person, String> getPersonName = null; // TODO
+        final Function<Person, String> getPersonName = Person::getFirstName;
 
         assertEquals("John", getPersonName.apply(person));
 
-        final Predicate<String> isJohnString = null; // TODO using method reference check that "John" equals string parameter
+        final Predicate<String> isJohnString = "John"::equals;
 
         final Predicate<Person> isJohnPerson = combine(getPersonName, isJohnString);
 
