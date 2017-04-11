@@ -19,6 +19,8 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static org.junit.Assert.assertEquals;
+
 
 public class CollectorsExercise2 {
 
@@ -193,10 +195,10 @@ public class CollectorsExercise2 {
         final Map<Key, List<Value>> keyValuesMap2 = getResultMap(res2.getKeyById(), res2.getValueById());
 
         keyValuesMap2.forEach((k, v) -> {
-            System.out.println(k.getId() + " -> " + v.stream().map(Value::getKeyId).collect(toList()));
+            System.out.println(k.getId() + " -> e" + v.stream().map(Value::getKeyId).collect(toList()));
         });
 
-        Assert.assertEquals(keyValuesMap1, keyValuesMap2);
+        assertEquals(keyValuesMap1, keyValuesMap2);
 
         // Получение результата сразу:
 
@@ -238,7 +240,7 @@ public class CollectorsExercise2 {
         // compare results
     }
 
-    public Map<Key, List<Value>> getResultMap(Map<String, Key> keyMap1, Map<String, List<Value>> valuesMap1) {
+    public static Map<Key, List<Value>> getResultMap(Map<String, Key> keyMap1, Map<String, List<Value>> valuesMap1) {
         return valuesMap1.entrySet()
                         .stream()
                         .collect(toMap(ent -> keyMap1.get(ent.getKey()), Map.Entry::getValue));
@@ -255,7 +257,7 @@ public class CollectorsExercise2 {
         public BiConsumer<MapPair, Pair> accumulator() {
             return (maps, pair) -> {
                 maps.getKeyById().put(pair.getKey().getId(), pair.getKey());
-                maps.getValueById().merge(pair.getKey().getId(), Collections.singletonList(pair.getValue()), (v1, v2) -> {
+                maps.getValueById().merge(pair.getValue().getKeyId(), Collections.singletonList(pair.getValue()), (v1, v2) -> {
                     List<Value> result = new ArrayList<>();
                     result.addAll(v1);
                     result.addAll(v2);

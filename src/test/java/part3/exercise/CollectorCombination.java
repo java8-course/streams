@@ -5,6 +5,7 @@ import part2.exercise.CollectorsExercise2;
 import part2.exercise.CollectorsExercise2.Key;
 import part2.exercise.CollectorsExercise2.Value;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +16,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 import static java.util.stream.Collectors.*;
+import static org.junit.Assert.assertEquals;
 
 public class CollectorCombination {
 
@@ -39,7 +41,8 @@ public class CollectorCombination {
     private static <T, M1, M2, R1, R2> Collector<T, Pair<M1, M2>, Pair<R1, R2>> paired(Collector<T, M1, R1> c1,
                                                                                        Collector<T, M2, R2> c2) {
 
-        return new Collector<T, Pair<M1, M2>, Pair<R1, R2>>() {
+
+        Collector<T, Pair<M1, M2>, Pair<R1, R2>> collector = new Collector<T, Pair<M1, M2>, Pair<R1, R2>>() {
             @Override
             public Supplier<Pair<M1, M2>> supplier() {
                 return () -> new Pair<M1, M2>(c1.supplier().get(), c2.supplier().get());
@@ -73,9 +76,11 @@ public class CollectorCombination {
 
             @Override
             public Set<Characteristics> characteristics() {
-                return null;
+                return Collections.emptySet();
             }
         };
+
+        return collector;
     }
 
     @Test
@@ -83,17 +88,15 @@ public class CollectorCombination {
 
         final List<CollectorsExercise2.Pair> pairs = CollectorsExercise2.generatePairs(10, 100);
 
-        final CollectorsExercise2.MapPair res1 = pairs.stream()
+        final CollectorsExercise2.MapPair pairExpected = pairs.stream()
                 .collect(new CollectorsExercise2.KeyValueMappingCollector());
 
-        final Map<String, Key> keyMap2 = res1.getKeyById();
-        final Map<String, List<Value>> valuesMap2 = res1.getValueById();
-//
-//        final Map<Key, List<Value>> keyValuesMap2 = valuesMap1.entrySet()
-//                .stream()
-//                .collect(toMap(ent -> keyMap2.get(ent.getKey()), Map.Entry::getValue));
+        final Map<String, Key> keyMap1 = pairExpected.getKeyById();
+        final Map<String, List<Value>> valuesMap1 = pairExpected.getValueById();
 
-        final Pair<Map<String, Key>, Map<String, List<Value>>> res2 = pairs.stream()
+        Map<Key, List<Value>> expected = CollectorsExercise2.getResultMap(keyMap1, valuesMap1);
+
+        final Pair<Map<String, Key>, Map<String, List<Value>>> pairRes = pairs.stream()
                 .collect(
                         paired(
                                 mapping(CollectorsExercise2.Pair::getKey, toMap(Key::getId, Function.identity(), (x, y) -> x)),
@@ -101,9 +104,12 @@ public class CollectorCombination {
                         )
                 );
 
+        final Map<String, Key> keyMap2 = pairRes.getA();
+        final Map<String, List<Value>> valuesMap2 = pairRes.getB();
 
-        // TODO tests
-        throw new UnsupportedOperationException();
+        Map<Key, List<Value>> result = CollectorsExercise2.getResultMap(keyMap2, valuesMap2);
+
+        assertEquals(expected, result);
     }
 
 }
