@@ -90,8 +90,8 @@ public class StreamsExercise1 {
         int result = employees.stream()
                 .flatMap(e -> e.getJobHistory().stream())
                 .filter(j -> j.getEmployer().equals("epam"))
-                .map(j -> j.getDuration())
-                .reduce(0, (a, b) -> a + b);
+                .mapToInt(j -> j.getDuration())
+                .sum(); //Or .reduce(0, (a, b) -> a + b);
 
         assertEquals(expected, result);
     }
