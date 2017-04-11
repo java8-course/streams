@@ -76,10 +76,9 @@ public class StreamsExercise {
 
         final Map<String, List<PersonEmployer>> index = employees
                 .stream()
-                .map(emp -> {
-                    String employer = emp.getJobHistory().isEmpty() ? "" : emp.getJobHistory().get(0).getEmployer();
-                    return new PersonEmployer(emp.getPerson(), employer);
-                })
+                .flatMap(emp ->
+                        emp.getJobHistory().stream()
+                                .map(job -> new PersonEmployer(emp.getPerson(), job.getEmployer()))                )
                 .collect(groupingBy(emp -> emp.employer, toList()));
 
         assertEquals(11, index.get("epam").size());
