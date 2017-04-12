@@ -6,10 +6,9 @@ import data.Person;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
@@ -219,7 +218,15 @@ public class StreamsExercise {
         // Get person with max duration on given position
         final List<Employee> employees = getEmployees();
 
-        final Map<String, PersonPositionDuration> coolestPersonByPosition = null;// TODO
+        final Map<String, PersonPositionDuration> coolestPersonByPosition = employees.stream()
+                .map(StreamsExercise::getPersonPositionIndex)
+                .flatMap(ppi -> ppi.getDurationByPositionIndex()
+                        .entrySet()
+                        .stream()
+                        .map(ent -> new PersonPositionDuration(ppi.getPerson(), ent.getKey(), ent.getValue())))
+                .collect(Collectors.toMap(PersonPositionDuration::getPosition,
+                        Function.identity(),
+                        BinaryOperator.maxBy(Comparator.comparing(PersonPositionDuration::getDuration))));
 
 
         assertEquals(new Person("John", "White", 22), coolestPersonByPosition.get("QA").getPerson());
