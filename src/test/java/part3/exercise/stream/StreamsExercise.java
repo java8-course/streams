@@ -157,15 +157,19 @@ public class StreamsExercise {
     }
 
     private static PersonPositionIndex getPersonPositionIndex(Employee e) {
-        // TODO
-        throw new UnsupportedOperationException();
+        Map<String, Integer> index = e.getJobHistory()
+                .stream()
+                .collect(toMap(JobHistoryEntry::getPosition, JobHistoryEntry::getDuration, Integer::sum));
+        return new PersonPositionIndex(e.getPerson(), index);
     }
 
     @Test
     public void getSumDurationsForPersonByPosition() {
         final List<Employee> employees = getEmployees();
 
-        final List<PersonPositionIndex> personIndexes = null; // TODO use getPersonPositionIndex
+        final List<PersonPositionIndex> personIndexes = employees.stream()
+                .map(StreamsExercise::getPersonPositionIndex)
+                .collect(toList());
 
         assertEquals(1, personIndexes.get(3).getDurationByPositionIndex().size());
     }
