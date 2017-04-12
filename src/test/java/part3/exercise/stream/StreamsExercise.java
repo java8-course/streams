@@ -202,7 +202,13 @@ public class StreamsExercise {
     public void getDurationsForEachPersonByPosition() {
         final List<Employee> employees = getEmployees();
 
-        final List<PersonPositionDuration> personPositionDurations = null; // TODO
+        final List<PersonPositionDuration> personPositionDurations = employees.stream()
+                .map(StreamsExercise::getPersonPositionIndex)
+                .flatMap(ppi -> ppi.getDurationByPositionIndex()
+                        .entrySet()
+                        .stream()
+                        .map(ent -> new PersonPositionDuration(ppi.getPerson(), ent.getKey(), ent.getValue())))
+                .collect(toList());
 
 
         assertEquals(17, personPositionDurations.size());
