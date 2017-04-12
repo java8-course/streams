@@ -32,9 +32,10 @@ public class StreamsExercise2 {
     @Test
     public void employersStuffLists() {
         Map<String, List<Person>> employersStuffLists = null;// TODO
-        List<Employee> employees = getEmployees();
 
-        Stream<EmployerPersonPair> employerPersonPairStream = employees.stream()
+        Stream<Employee> employeeStream = getEmployees().stream();
+
+        Stream<EmployerPersonPair> employerPersonPairStream = employeeStream
                 .flatMap(StreamsExercise2::toEmployerPersonPairs);
 
         employersStuffLists = employerPersonPairStream
@@ -43,14 +44,14 @@ public class StreamsExercise2 {
                         mapping(EmployerPersonPair::getPerson, toList())));
 
         //expected
-        Set<String> employers = employees.stream()
+        Set<String> employers = employeeStream
                 .flatMap(e -> e.getJobHistory().stream()
                         .map(JobHistoryEntry::getEmployer))
                 .collect(toSet());
 
         Map<String, List<Person>> expected = new HashMap<>();
         employers.forEach(employer -> {
-            List<Person> persons = employees.stream()
+            List<Person> persons = employeeStream
                     .filter(e -> e.getJobHistory().stream()
                             .anyMatch(j -> j.getEmployer().equals(employer)))
                     .map(Employee::getPerson)
