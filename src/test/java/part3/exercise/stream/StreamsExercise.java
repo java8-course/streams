@@ -78,7 +78,7 @@ public class StreamsExercise {
                 .stream()
                 .flatMap(emp ->
                         emp.getJobHistory().stream()
-                                .map(job -> new PersonEmployer(emp.getPerson(), job.getEmployer()))                )
+                                .map(job -> new PersonEmployer(emp.getPerson(), job.getEmployer())))
                 .collect(groupingBy(emp -> emp.employer, toList()));
 
         assertEquals(11, index.get("epam").size());
@@ -129,7 +129,11 @@ public class StreamsExercise {
         // sum all durations for each person
         final List<Employee> employees = getEmployees();
 
-        final Map<Person, Integer> personDuration = null; // TODO use sumAllPersonDurations
+        final Map<Person, Integer> personDuration = employees.stream()
+                .flatMap(e -> e.getJobHistory()
+                        .stream()
+                        .map(j -> new PersonDuration(e.getPerson(), j.getDuration())))
+                .collect(groupingBy(PersonDuration::getPerson, summingInt(PersonDuration::getDuration)));
 
         assertEquals(Integer.valueOf(8), personDuration.get(new Person("John", "Doe", 24)));
     }
