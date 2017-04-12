@@ -199,45 +199,6 @@ public class CollectorsExercise2 {
         });
 
         assertEquals(keyValuesMap1, keyValuesMap2);
-
-        // Получение результата сразу:
-
-//        final SubResult res3 = pairs.stream()
-//                .collect(new Collector<Pair, SubResult, SubResult>() {
-//                    @Override
-//                    public Supplier<SubResult> supplier() {
-//                        // TODO
-//                        throw new UnsupportedOperationException();
-//                    }
-//
-//                    @Override
-//                    public BiConsumer<SubResult, Pair> accumulator() {
-//                        // TODO add key to map, then check value.keyId and add it to one of maps
-//                        throw new UnsupportedOperationException();
-//                    }
-//
-//                    @Override
-//                    public BinaryOperator<SubResult> combiner() {
-//                        // TODO use mapMerger, then check all valuesWithoutKeys
-//                        throw new UnsupportedOperationException();
-//                    }
-//
-//                    @Override
-//                    public Function<SubResult, SubResult> finisher() {
-//                        // TODO use mapMerger, then check all valuesWithoutKeys
-//                        throw new UnsupportedOperationException();
-//                    }
-//
-//                    @Override
-//                    public Set<Characteristics> characteristics() {
-//                        return Collections.unmodifiableSet(EnumSet.of(
-//                                Characteristics.UNORDERED));
-//                    }
-//                });
-
-//        final Map<Key, List<Value>> keyValuesMap3 = res3.getSubResult();
-
-        // compare results
     }
 
     public static Map<Key, List<Value>> getResultMap(Map<String, Key> keyMap1, Map<String, List<Value>> valuesMap1) {
