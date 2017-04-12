@@ -1,19 +1,24 @@
 package part1.exercise;
 
 import data.Employee;
+import data.Generator;
 import data.JobHistoryEntry;
 import data.Person;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.junit.Test;
+import part3.exercise.stream.StreamsExercise;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static data.Generator.generateEmployeeList;
 import static java.util.stream.Collectors.*;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class StreamsExercise2 {
     // https://youtu.be/kxgo7Y4cdA8 Сергей Куксенко и Алексей Шипилёв — Через тернии к лямбдам, часть 1
@@ -27,7 +32,48 @@ public class StreamsExercise2 {
     @Test
     public void employersStuffLists() {
         Map<String, List<Person>> employersStuffLists = null;// TODO
-        throw new UnsupportedOperationException();
+
+        Stream<Employee> employeeStream = getEmployees().stream();
+
+        Stream<EmployerPersonPair> employerPersonPairStream = employeeStream
+                .flatMap(StreamsExercise2::toEmployerPersonPairs);
+
+        employersStuffLists = employerPersonPairStream
+                .collect(Collectors.groupingBy(
+                        EmployerPersonPair::getEmployer,
+                        mapping(EmployerPersonPair::getPerson, toList())));
+
+        //expected
+        Set<String> employers = employeeStream
+                .flatMap(e -> e.getJobHistory().stream()
+                        .map(JobHistoryEntry::getEmployer))
+                .collect(toSet());
+
+        Map<String, List<Person>> expected = new HashMap<>();
+        employers.forEach(employer -> {
+            List<Person> persons = employeeStream
+                    .filter(e -> e.getJobHistory().stream()
+                            .anyMatch(j -> j.getEmployer().equals(employer)))
+                    .map(Employee::getPerson)
+                    .collect(toList());
+            expected.put(employer, persons);
+        });
+
+        assertThat(employersStuffLists, is(expected));
+    }
+
+
+    private static Stream<EmployerPersonPair> toEmployerPersonPairs(Employee employee) {
+        return employee.getJobHistory().stream()
+                .map(e -> e.getEmployer())
+                .map(e -> new EmployerPersonPair(e, employee.getPerson()));
+    }
+
+    @AllArgsConstructor
+    @Getter
+    static class EmployerPersonPair {
+        String employer;
+        Person person;
     }
 
     @Test

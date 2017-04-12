@@ -127,8 +127,8 @@ public class StreamsExample {
         final Stream<PersonPositionPair> personPositionPairStream = employees.stream()
                 .flatMap(StreamsExample::employeeToPairs);
 
-        //personPositionPairStream
-        //        .reduce(Collections.EMPTY_MAP, StreamsExample::addToMap, StreamsExample::combineMaps);
+//        personPositionPairStream
+//                .reduce(Collections.EMPTY_MAP, StreamsExample::addToMap, StreamsExample::combineMaps);
 
 //        return personPositionPairStream
 //                .collect(
