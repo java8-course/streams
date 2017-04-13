@@ -19,6 +19,7 @@ import static java.util.stream.Collectors.toMap;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+@SuppressWarnings("WeakerAccess")
 public class CollectorsExercise2 {
 
     private static String generateString() {
@@ -154,7 +155,7 @@ public class CollectorsExercise2 {
         }
     }
 
-    private static class MapPair {
+    public static class MapPair {
         private final Map<String, Key> keyById;
         private final Map<String, List<Value>> valueById;
 
@@ -209,7 +210,31 @@ public class CollectorsExercise2 {
                         }));
 
         // В 1 проход в 2 Map с использованием MapPair и mapMerger
-        final MapPair res2 = pairs.stream()
+        final MapPair res2 = getMapPair(pairs);
+
+        final Map<String, Key> keyMap2 = res2.getKeyById();
+        final Map<String, List<Value>> valuesMap2 = res2.getValueById();
+
+        final Map<Key, List<Value>> keyValuesMap2 = valuesMap2
+                .entrySet().stream()
+                .collect(toMap(e->keyMap2.get(e.getKey()),
+                        Map.Entry::getValue,
+                        (values, values2) -> {
+                            values.addAll(values2);
+                            return values;
+                        }));
+        assertThat(keyMap1, equalTo(keyMap2));
+        assertThat(keyValuesMap1.keySet(), equalTo(keyValuesMap2.keySet()));
+
+        Key randomKey = keyMap1.entrySet().stream()
+                .map(Map.Entry::getValue)
+                .findAny()
+                .orElse(null);
+        assertThat(keyValuesMap1.get(randomKey), equalTo(keyValuesMap2.get(randomKey)));
+    }
+
+    public static MapPair getMapPair(List<Pair> pairs) {
+        return pairs.stream()
                 .collect(new Collector<Pair, MapPair, MapPair>() {
                     @Override
                     public Supplier<MapPair> supplier() {
@@ -256,64 +281,5 @@ public class CollectorsExercise2 {
                                 Characteristics.IDENTITY_FINISH));
                     }
                 });
-
-        final Map<String, Key> keyMap2 = res2.getKeyById();
-        final Map<String, List<Value>> valuesMap2 = res2.getValueById();
-
-        final Map<Key, List<Value>> keyValuesMap2 = valuesMap2
-                .entrySet().stream()
-                .collect(toMap(e->keyMap2.get(e.getKey()),
-                        Map.Entry::getValue,
-                        (values, values2) -> {
-                            values.addAll(values2);
-                            return values;
-                        }));
-        assertThat(keyMap1, equalTo(keyMap2));
-        assertThat(keyValuesMap1.keySet(), equalTo(keyValuesMap2.keySet()));
-
-        Key randomKey = keyMap1.entrySet().stream()
-                .map(Map.Entry::getValue)
-                .findAny()
-                .orElse(null);
-        assertThat(keyValuesMap1.get(randomKey), equalTo(keyValuesMap2.get(randomKey)));
-
-        // Получение результата сразу:
-
-//        final SubResult res3 = pairs.stream()
-//                .collect(new Collector<Pair, SubResult, SubResult>() {
-//                    @Override
-//                    public Supplier<SubResult> supplier() {
-//                        return SubResult::new;
-//                    }
-//
-//                    @Override
-//                    public BiConsumer<SubResult, Pair> accumulator() {
-//                        // TODO add key to map, then check value.keyId and add it to one of maps
-//                        throw new UnsupportedOperationException();
-//                    }
-//
-//                    @Override
-//                    public BinaryOperator<SubResult> combiner() {
-//                        // TODO use mapMerger, then check all valuesWithoutKeys
-//                        throw new UnsupportedOperationException();
-//                    }
-//
-//                    @Override
-//                    public Function<SubResult, SubResult> finisher() {
-//                        // TODO use mapMerger, then check all valuesWithoutKeys
-//                        throw new UnsupportedOperationException();
-//                    }
-//
-//                    @Override
-//                    public Set<Characteristics> characteristics() {
-//                        return Collections.unmodifiableSet(EnumSet.of(
-//                                Characteristics.UNORDERED));
-//                    }
-//                });
-//
-//        final Map<Key, List<Value>> keyValuesMap3 = res3.getSubResult();
-
-        // compare results
     }
-
 }
