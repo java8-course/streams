@@ -35,7 +35,8 @@ public class StreamsExercise1 {
         }
         List<Person> actual = employees.stream()
                 .filter(e -> e.getJobHistory().stream()
-                        .map(JobHistoryEntry::getEmployer).anyMatch(employer -> employer.equals("epam")))
+                        .map(JobHistoryEntry::getEmployer)
+                        .anyMatch("epam"::equals))
                 .map(Employee::getPerson)
                 .collect(toList());
 
@@ -49,15 +50,22 @@ public class StreamsExercise1 {
         List<Person> expected = new ArrayList<>();
 
         for (Employee e : employees) {
-            if (e.getJobHistory().get(0).equals("epam"))
+            if (isFirstEmployerEpam(e))
                 expected.add(e.getPerson());
         }
         List<Person> actual = employees.stream()
-                .filter(e -> e.getJobHistory().get(0).equals("epam"))
+                .filter(StreamsExercise1::isFirstEmployerEpam)
                 .map(Employee::getPerson)
                 .collect(toList());
 
         assertEquals(expected, actual);
+    }
+
+    private static boolean isFirstEmployerEpam(Employee e) {
+        return e.getJobHistory()
+                .stream()
+                .limit(1)
+                .anyMatch("epam"::equals);
     }
 
     @Test
