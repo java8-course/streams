@@ -60,7 +60,11 @@ public class Generator {
     }
 
     public static List<Employee> generateEmployeeList() {
-        // TODO
-        throw new UnsupportedOperationException();
+        int maxLength = 10;
+
+        return Stream.generate(Generator::generateEmployee)
+                .limit(maxLength)
+                .collect(toList());
+
     }
 }

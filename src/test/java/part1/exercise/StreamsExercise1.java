@@ -15,6 +15,7 @@ import static data.Generator.generateEmployeeList;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
+import static junit.framework.TestCase.assertEquals;
 
 public class StreamsExercise1 {
     // https://youtu.be/kxgo7Y4cdA8 Сергей Куксенко и Алексей Шипилёв — Через тернии к лямбдам, часть 1
@@ -25,14 +26,21 @@ public class StreamsExercise1 {
 
     @Test
     public void getAllEpamEmployees() {
-        List<Person> epamEmployees = null;// TODO all persons with experience in epam
-        throw new UnsupportedOperationException();
+        List<Person> epamEmployees = generateEmployeeList().stream()
+                .filter(employee -> employee.getJobHistory().stream()
+                        .map(JobHistoryEntry::getEmployer)
+                        .anyMatch(s -> s.equals("epam")))
+                .map(Employee::getPerson)
+                .collect(toList());
+
     }
 
     @Test
     public void getEmployeesStartedFromEpam() {
-        List<Person> epamEmployees = null;// TODO all persons with first experience in epam
-        throw new UnsupportedOperationException();
+        List<Person> epamEmployees = generateEmployeeList().stream()
+                .filter(employee -> employee.getJobHistory().stream().limit(1).anyMatch(jhe -> jhe.getEmployer().equals("epam")))
+                .map(Employee::getPerson)
+                .collect(toList());
     }
 
     @Test
@@ -49,11 +57,12 @@ public class StreamsExercise1 {
             }
         }
 
-        // TODO
-        throw new UnsupportedOperationException();
-
-        // int result = ???
-        // assertEquals(expected, result);
+        int result = employees.stream()
+                .flatMap(employee -> employee.getJobHistory().stream())
+                .filter(jobHistoryEntry -> jobHistoryEntry.getEmployer().equals("epam"))
+                .mapToInt(JobHistoryEntry::getDuration)
+                .sum();
+         assertEquals(expected, result);
     }
 
 }
