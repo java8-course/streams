@@ -5,14 +5,10 @@ import data.JobHistoryEntry;
 import data.Person;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static data.Generator.generateEmployeeList;
-import static java.util.stream.Collectors.*;
 import static org.junit.Assert.assertEquals;
 
 public class StreamsExercise2 {
@@ -23,11 +19,56 @@ public class StreamsExercise2 {
     // https://youtu.be/i0Jr2l3jrDA Сергей Куксенко — Stream API, часть 2
 
     // TODO class PersonEmployerPair
+    public static class PersonEmployerPair {
+        private final Person person;
+        private final String employer;
+
+        public PersonEmployerPair(Person person, String employer) {
+            this.person = person;
+            this.employer = employer;
+        }
+
+        public Person getPerson() {
+            return person;
+        }
+
+        public String getEmployer() {
+            return employer;
+        }
+    }
+
+    private static Stream<PersonEmployerPair> employeeToPairs(Employee employee) {
+        return employee.getJobHistory().stream()
+                .map(JobHistoryEntry::getEmployer)
+                .map(p -> new PersonEmployerPair(employee.getPerson(), p));
+    }
 
     @Test
     public void employersStuffLists() {
-        Map<String, List<Person>> employersStuffLists = null;// TODO
-        throw new UnsupportedOperationException();
+        Map<String, List<Person>> employersStuffLists = new HashMap<>();
+
+        final List<Employee> employees = getEmployees();
+        for (Employee employee : employees) {
+            for (JobHistoryEntry jobHistoryEntry : employee.getJobHistory()) {
+                employersStuffLists.put(jobHistoryEntry.getEmployer(), new ArrayList<>());
+            }
+        }
+        for (Employee employee : employees) {
+            for (JobHistoryEntry jobHistoryEntry : employee.getJobHistory()) {
+                employersStuffLists.get(jobHistoryEntry.getEmployer()).add(employee.getPerson());
+            }
+        }
+
+
+        final Stream<PersonEmployerPair> personEmployerPairStream = employees.stream()
+                .flatMap(StreamsExercise2::employeeToPairs);
+
+        final Map<String, List<Person>> collect = personEmployerPairStream
+                .collect(Collectors.groupingBy
+                (PersonEmployerPair::getEmployer,
+                Collectors.mapping(PersonEmployerPair::getPerson, Collectors.toList())));
+
+        assertEquals(employersStuffLists, collect);
     }
 
     @Test

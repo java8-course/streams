@@ -79,7 +79,7 @@ public class StreamsExercise1 {
             }
         }
 
-        // TODO
+
         final int result = employees.stream()
                 .map(t -> t.getJobHistory())
                 .flatMap(t -> t.stream())
