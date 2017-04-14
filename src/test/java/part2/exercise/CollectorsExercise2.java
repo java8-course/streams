@@ -17,8 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.*;
 import static org.junit.Assert.assertEquals;
 
 
@@ -178,13 +177,7 @@ public class CollectorsExercise2 {
 
         final Map<String, List<Value>> valuesMap1 = pairs.stream()
                 .map(Pair::getValue)
-                .collect(toMap(Value::getKeyId, Collections::singletonList,
-                        (v1, v2) -> {
-                            List<Value> result = new ArrayList<>();
-                            result.addAll(v1);
-                            result.addAll(v2);
-                            return result;
-                        }));
+                .collect(groupingBy(Value::getKeyId, toList()));
 
         final Map<Key, List<Value>> keyValuesMap1 = getResultMap(keyMap1, valuesMap1);
 
