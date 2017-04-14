@@ -203,11 +203,7 @@ public class CollectorsExercise2 {
         // В каждом Map.Entry id ключа должно совпадать с keyId для каждого значения в списке
         final Map<Key, List<Value>> keyValuesMap1 = valueMap1.entrySet().stream()
                 .collect(toMap(e -> keyMap1.get(e.getKey()),
-                        Map.Entry::getValue,
-                        (values, values2) -> {
-                            values.addAll(values2);
-                            return values;
-                        }));
+                        Map.Entry::getValue));
 
         // В 1 проход в 2 Map с использованием MapPair и mapMerger
         final MapPair res2 = getMapPair(pairs);
@@ -218,11 +214,8 @@ public class CollectorsExercise2 {
         final Map<Key, List<Value>> keyValuesMap2 = valuesMap2
                 .entrySet().stream()
                 .collect(toMap(e->keyMap2.get(e.getKey()),
-                        Map.Entry::getValue,
-                        (values, values2) -> {
-                            values.addAll(values2);
-                            return values;
-                        }));
+                        Map.Entry::getValue));
+
         assertThat(keyMap1, equalTo(keyMap2));
         assertThat(keyValuesMap1.keySet(), equalTo(keyValuesMap2.keySet()));
 
