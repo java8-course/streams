@@ -56,7 +56,9 @@ public class StreamsExercise1 {
         List<Person> expected = new ArrayList<>();
 
         for (Employee e : employees) {
-            if (e.getJobHistory().get(0).getEmployer().equals("epam"))
+
+            List<JobHistoryEntry> jobHistory = e.getJobHistory();
+            if (!jobHistory.isEmpty() && jobHistory.get(0).getEmployer().equals("epam"))
                 expected.add(e.getPerson());
         }
 
@@ -86,8 +88,7 @@ public class StreamsExercise1 {
                 .flatMap(emp -> emp.getJobHistory().stream())
                 .filter(job -> job.getEmployer().equals("epam"))
                 .mapToInt(JobHistoryEntry::getDuration)
-                .reduce((e1, e2) -> e1 + e2)
-                .orElse(0);
+                .sum();
         assertEquals(expected, result);
     }
 
