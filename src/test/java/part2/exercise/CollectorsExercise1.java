@@ -121,16 +121,14 @@ public class CollectorsExercise1 {
     // With the longest sum duration on this position
     // { John Doe, [{dev, google, 4}, {dev, epam, 4}] } предпочтительнее, чем { A B, [{dev, google, 6}, {QA, epam, 100}]}
     private Map<String, Person> getCoolestByPosition2(List<Employee> employees) {
-        Map<String, List<PersonPositionDuration>> map = employees.stream()
+        return employees.stream()
                 .flatMap(this::employeeToPersonPositionDurationStream)
-                .collect(groupingBy(PersonPositionDuration::getPosition));
-
-        return map.entrySet().stream()
-                .collect(toMap(Map.Entry::getKey,
-                        e -> e.getValue().stream()
-                                .reduce((ppd1, ppd2) -> ppd1.getDuration() > ppd2.getDuration() ? ppd1 : ppd2)
-                                .get()
-                                .getPerson()));
+                .collect(groupingBy(PersonPositionDuration::getPosition,
+                        collectingAndThen(
+                                maxBy(Comparator.comparing(PersonPositionDuration::getDuration)),
+                                personEmployerDuration -> personEmployerDuration.get().getPerson())
+                        )
+                );
     }
 
     private Stream<PersonPositionDuration> employeeToPersonPositionDurationStream(Employee employee) {
