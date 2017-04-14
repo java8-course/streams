@@ -38,7 +38,7 @@ public class StreamsExercise1 {
     @Test
     public void getEmployeesStartedFromEpam() {
         List<Person> epamEmployees = generateEmployeeList().stream()
-                .filter(employee -> employee.getJobHistory().get(0).getEmployer().equals("epam"))
+                .filter(employee -> employee.getJobHistory().stream().limit(1).anyMatch(jhe -> jhe.getEmployer().equals("epam")))
                 .map(Employee::getPerson)
                 .collect(toList());
     }
