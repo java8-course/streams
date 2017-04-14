@@ -133,17 +133,22 @@ public class CollectorsExercise1 {
     private Map<String, Person> getCoolestByPosition2(List<Employee> employees) {
         Map<String, Person> result =
                 employees.stream()
-                        .flatMap(emp -> emp.getJobHistory()
-                                .stream()
-                                .map(job -> new Job(emp.getPerson(), job.getEmployer(), job.getDuration(), job.getPosition())))
-                        .collect(groupingBy(Job::getPosition,
-                                collectingAndThen(
-                                        reducing(
-                                                (j1, j2) -> new Job(j1.getPerson(), j1.getEmployer(),
-                                                        j1.getDuration() + j2.getDuration(), j1.getPosition())),
-                                        j -> j.get().getPerson())));
+                        .flatMap(CollectorsExercise1::collapsePositionDurations)
+                        .collect(groupingBy(Job::getPosition, collectingAndThen(maxBy(Comparator.comparing(Job::getDuration)), job -> job.get().getPerson())));
 
         return result;
+    }
+
+    private static Stream<Job> collapsePositionDurations(Employee emp) {
+        return emp.getJobHistory()
+                .stream()
+                .map(job -> new Job(emp.getPerson(), job.getEmployer(), job.getDuration(), job.getPosition()))
+                .collect(groupingBy(Job::getPosition,
+                        reducing((j1, j2) -> new Job(j1.getPerson(), j1.getEmployer(),
+                                j1.getDuration() + j2.getDuration(), j1.getPosition()))))
+                .values()
+                .stream()
+                .map(Optional::get);
     }
 
     private List<Employee> getEmployees() {
