@@ -6,25 +6,25 @@ import data.Person;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.*;
+import static org.junit.Assert.assertEquals;
 
 public class CollectorsExercise1 {
 
     @Test
     public void getTheCoolestOne() {
-        final Map<String, Person> coolestByPosition = getCoolestByPosition(getEmployees());
+        final Map<String, Person> coolestByPosition1 = getCoolestByPositionVar1(getEmployees());
+        final Map<String, Person> coolestByPosition2 = getCoolestByPositionVar2(getEmployees());
 
-        coolestByPosition.forEach((position, person) -> System.out.println(position + " -> " + person));
+        assertEquals(coolestByPosition1, coolestByPosition2);
     }
 
     private static class PersonPositionDuration {
@@ -32,51 +32,116 @@ public class CollectorsExercise1 {
         private final String position;
         private final int duration;
 
-        public PersonPositionDuration(Person person, String position, int duration) {
+        PersonPositionDuration(Person person, String position, int duration) {
             this.person = person;
             this.position = position;
             this.duration = duration;
         }
 
-        public Person getPerson() {
+        Person getPerson() {
             return person;
         }
 
-        public String getPosition() {
+        String getPosition() {
             return position;
         }
 
-        public int getDuration() {
+        int getDuration() {
             return duration;
         }
     }
 
-    // With the longest duration on single job
-    private Map<String, Person> getCoolestByPosition(List<Employee> employees) {
-        // First option
-        // Collectors.maxBy
-        // Collectors.collectingAndThen
-        // Collectors.groupingBy
+    private Stream<PersonPositionDuration> getPersonPositionDurationStream(List<Employee> employees) {
+        return employees
+                .stream()
+                .flatMap(
+                        e -> e.getJobHistory().stream()
+                                .map(j -> new PersonPositionDuration(e.getPerson(), j.getPosition(), j.getDuration()))
+                );
+    }
 
-        // Second option
-        // Collectors.toMap
-        // iterate twice: stream...collect(...).stream()...
-        // TODO
-        throw new UnsupportedOperationException();
+    private Map<String, Person> getCoolestByPositionVar1(List<Employee> employees) {
+        return getPersonPositionDurationStream(employees)
+                .collect(
+                        groupingBy(
+                                PersonPositionDuration::getPosition,
+                                collectingAndThen(maxBy(comparing(PersonPositionDuration::getDuration)), ppd -> ppd.get().getPerson())
+                        )
+                );
+    }
+
+    private Map<String, Person> getCoolestByPositionVar2(List<Employee> employees) {
+        return getPersonPositionDurationStream(employees)
+                .collect(
+                        toMap(
+                                PersonPositionDuration::getPosition,
+                                Function.identity(),
+                                BinaryOperator.maxBy(comparing(PersonPositionDuration::getDuration))
+                        )
+                )
+                .entrySet()
+                .stream()
+                .collect(
+                        toMap(
+                                Map.Entry::getKey,
+                                ppd -> ppd.getValue().getPerson()
+                        )
+                );
     }
 
     @Test
     public void getTheCoolestOne2() {
-        final Map<String, Person> coolestByPosition = getCoolestByPosition2(getEmployees());
+        final Map<String, Person> coolestByPosition1 = getCoolestByPositionVar1(getEmployees());
+        final Map<String, Person> coolestByPosition3 = getCoolestByPositionVar3(getEmployees());
 
-        coolestByPosition.forEach((position, person) -> System.out.println(position + " -> " + person));
+        assertEquals(coolestByPosition1, coolestByPosition3);
     }
 
-    // With the longest sum duration on this position
-    // { John Doe, [{dev, google, 4}, {dev, epam, 4}] } предпочтительнее, чем { A B, [{dev, google, 6}, {QA, epam, 100}]}
-    private Map<String, Person> getCoolestByPosition2(List<Employee> employees) {
-        // TODO
-        throw new UnsupportedOperationException();
+    private Map<String, Person> getCoolestByPositionVar3(List<Employee> employees) {
+        return getPersonPositionDurationStream(employees).collect(
+                new Collector<PersonPositionDuration, Map<String, PersonPositionDuration>, Map<String, Person>>() {
+                    @Override
+                    public Supplier<Map<String, PersonPositionDuration>> supplier() {
+                        return HashMap::new;
+                    }
+
+                    @Override
+                    public BiConsumer<Map<String, PersonPositionDuration>, PersonPositionDuration> accumulator() {
+                        return (map, ppd) -> {
+                            map.putIfAbsent(ppd.getPosition(), ppd);
+                            PersonPositionDuration currentPpd = map.get(ppd.getPosition());
+                            if (ppd.getDuration() > currentPpd.getDuration()) {
+                                map.put(ppd.getPosition(), ppd);
+                            }
+                        };
+                    }
+
+                    @Override
+                    public BinaryOperator<Map<String, PersonPositionDuration>> combiner() {
+                        return (m1, m2) -> {
+                            m2.forEach((k, v) -> m1.merge(k, v, (v1, v2) -> v1.getDuration() > v2.getDuration() ? v1 : v2));
+                            return m1;
+                        };
+                    }
+
+                    @Override
+                    public Function<Map<String, PersonPositionDuration>, Map<String, Person>> finisher() {
+                        return map -> map.entrySet()
+                                .stream()
+                                .collect(
+                                        toMap(
+                                                Map.Entry::getKey,
+                                                item -> item.getValue().getPerson()
+                                        )
+                                );
+                    }
+
+                    @Override
+                    public Set<Characteristics> characteristics() {
+                        return Collections.unmodifiableSet(EnumSet.of(Characteristics.UNORDERED));
+                    }
+                }
+        );
     }
 
     private List<Employee> getEmployees() {
