@@ -9,6 +9,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.*;
 import static org.junit.Assert.assertEquals;
 
 public class StreamsExercise2 {
@@ -107,11 +109,48 @@ public class StreamsExercise2 {
         assertEquals(employeesIndex, collect);
     }
 
+    private static class PersonEmployerDuration {
+        private final Person person;
+        private final String employer;
+        private final int duration;
+
+        public PersonEmployerDuration(Person person, String employer, int duration) {
+            this.person = person;
+            this.employer = employer;
+            this.duration = duration;
+        }
+
+        public Person getPerson() {
+            return person;
+        }
+
+        public String getEmployer() {
+            return employer;
+        }
+
+        public int getDuration() {
+            return duration;
+        }
+    }
     @Test
     public void greatestExperiencePerEmployer() {
-        Map<String, Person> employeesIndex = null;// TODO
+        Map<String, Person> employeesIndex = null;
+        final List<Employee> employees = getEmployees();
+        final Stream<PersonEmployerDuration> personEmployerDurationStream = employees.stream()
+                .flatMap(
+                        e -> e.getJobHistory()
+                                .stream()
+                                .map(j -> new PersonEmployerDuration(e.getPerson(), j.getEmployer(), j.getDuration())));
+
+        employeesIndex = personEmployerDurationStream
+                .collect(groupingBy(
+                        PersonEmployerDuration::getEmployer,
+                        collectingAndThen(
+                                maxBy(comparing(PersonEmployerDuration::getDuration)), p -> p.get().getPerson())));
+
 
         assertEquals(new Person("John", "White", 28), employeesIndex.get("epam"));
+        System.out.println(employeesIndex);
     }
 
 
