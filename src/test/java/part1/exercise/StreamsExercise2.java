@@ -18,7 +18,7 @@ public class StreamsExercise2 {
     // https://youtu.be/O8oN4KSZEXE Сергей Куксенко — Stream API, часть 1
     // https://youtu.be/i0Jr2l3jrDA Сергей Куксенко — Stream API, часть 2
 
-    // TODO class PersonEmployerPair
+
     public static class PersonEmployerPair {
         private final Person person;
         private final String employer;
@@ -71,10 +71,40 @@ public class StreamsExercise2 {
         assertEquals(employersStuffLists, collect);
     }
 
+    private static PersonEmployerPair firstEmployerPersonPair(Employee employee) {
+        final JobHistoryEntry jobHistoryEntry = employee.getJobHistory().stream()
+                .findFirst()
+                .get();
+
+        return new PersonEmployerPair(employee.getPerson(), jobHistoryEntry.getEmployer());
+    }
+
     @Test
     public void indexByFirstEmployer() {
-        Map<String, List<Person>> employeesIndex = null;// TODO
-        throw new UnsupportedOperationException();
+        Map<String, List<Person>> employeesIndex = new HashMap<>();
+        final List<Employee> employees = getEmployees();
+        for (Employee employee : employees) {
+            for (JobHistoryEntry jobHistoryEntry : employee.getJobHistory()) {
+                employeesIndex.put(jobHistoryEntry.getEmployer(), new ArrayList<>());
+            }
+        }
+        for (Employee employee : employees) {
+            employeesIndex.get(employee.getJobHistory().get(0).getEmployer()).add(employee.getPerson());
+        }
+
+        employeesIndex.entrySet().removeIf(entry -> entry.getValue().equals(Collections.EMPTY_LIST));
+
+
+        final Stream<PersonEmployerPair> personEmployerPairStream = employees.stream()
+                .map(StreamsExercise2::firstEmployerPersonPair);
+
+        final Map<String, List<Person>> collect = personEmployerPairStream
+                .collect(Collectors.groupingBy
+                        (PersonEmployerPair::getEmployer,
+                                Collectors.mapping(PersonEmployerPair::getPerson, Collectors.toList())));
+
+
+        assertEquals(employeesIndex, collect);
     }
 
     @Test
