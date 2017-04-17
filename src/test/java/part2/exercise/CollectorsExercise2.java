@@ -167,6 +167,7 @@ public class CollectorsExercise2 {
     public void collectKeyValueMap() {
         final List<Pair> pairs = generatePairs(10, 100);
 
+        // сделать через Set
         // В два прохода
         // final Map<String, Key> keyMap1 = pairs.stream()...
 
@@ -184,12 +185,14 @@ public class CollectorsExercise2 {
                         throw new UnsupportedOperationException();
                     }
 
+                    // 2 независимых действия
                     @Override
                     public BiConsumer<MapPair, Pair> accumulator() {
                         // TODO add key and value to maps
                         throw new UnsupportedOperationException();
                     }
 
+                    // 2 независимых действия
                     @Override
                     public BinaryOperator<MapPair> combiner() {
                         // TODO use mapMerger

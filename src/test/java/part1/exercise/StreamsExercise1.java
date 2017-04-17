@@ -1,20 +1,19 @@
 package part1.exercise;
 
 import data.Employee;
+import data.Generator;
 import data.JobHistoryEntry;
 import data.Person;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static data.Generator.generateEmployeeList;
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.toList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class StreamsExercise1 {
     // https://youtu.be/kxgo7Y4cdA8 Сергей Куксенко и Алексей Шипилёв — Через тернии к лямбдам, часть 1
@@ -23,16 +22,32 @@ public class StreamsExercise1 {
     // https://youtu.be/O8oN4KSZEXE Сергей Куксенко — Stream API, часть 1
     // https://youtu.be/i0Jr2l3jrDA Сергей Куксенко — Stream API, часть 2
 
+    private Stream<PersonEmployerPair> getEmployeePairs(Employee employee) {
+        return employee.getJobHistory().stream()
+                .map(JobHistoryEntry::getEmployer)
+                .map(empl -> new PersonEmployerPair(employee.getPerson(), empl));
+    }
+
     @Test
     public void getAllEpamEmployees() {
-        List<Person> epamEmployees = null;// TODO all persons with experience in epam
-        throw new UnsupportedOperationException();
+        final List<Employee> employees = Generator.generateEmployeeList();
+
+        final List<Person> personList = employees.stream()
+                .flatMap(this::getEmployeePairs)
+                .filter(p -> p.getEmployer().equals("epam"))
+                .map(PersonEmployerPair::getPerson)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     @Test
     public void getEmployeesStartedFromEpam() {
-        List<Person> epamEmployees = null;// TODO all persons with first experience in epam
-        throw new UnsupportedOperationException();
+        final List<Employee> employees = Generator.generateEmployeeList();
+
+        final List<Person> personList = employees.stream()
+                .filter(employee -> employee.getJobHistory().get(0).getEmployer().equals("epam"))
+                .map(Employee::getPerson)
+                .collect(Collectors.toList());
     }
 
     @Test
@@ -49,11 +64,53 @@ public class StreamsExercise1 {
             }
         }
 
-        // TODO
-        throw new UnsupportedOperationException();
 
-        // int result = ???
-        // assertEquals(expected, result);
+        final int result = employees.stream()
+                .flatMap(e -> e.getJobHistory().stream())
+                .filter(j -> j.getEmployer().equals("epam"))
+                .mapToInt(JobHistoryEntry::getDuration)
+                .sum();
+
+
+        // TODO
+
+        assertEquals(expected, result);
+    }
+
+    private static class PersonEmployerPair {
+        private final Person person;
+        private final String employer;
+
+        public PersonEmployerPair(Person person, String employer) {
+            this.person = person;
+            this.employer = employer;
+        }
+
+        public Person getPerson() {
+            return person;
+        }
+
+        public String getEmployer() {
+            return employer;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            PersonEmployerPair that = (PersonEmployerPair) o;
+
+            if (person != null ? !person.equals(that.person) : that.person != null) return false;
+            return employer != null ? employer.equals(that.employer) : that.employer == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = person != null ? person.hashCode() : 0;
+            result = 31 * result + (employer != null ? employer.hashCode() : 0);
+            return result;
+        }
     }
 
 }

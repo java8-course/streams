@@ -60,7 +60,7 @@ public class Generator {
     }
 
     public static List<Employee> generateEmployeeList() {
-        // TODO
-        throw new UnsupportedOperationException();
+        int size = 3;
+        return IntStream.range(0, size).mapToObj(i -> generateEmployee()).collect(Collectors.toList());
     }
 }

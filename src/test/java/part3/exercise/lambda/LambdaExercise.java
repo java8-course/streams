@@ -15,7 +15,7 @@ public class LambdaExercise {
     public void supply() {
         final Person person = new Person("John", "Galt", 30);
 
-        final Supplier<Person> getPerson = null; // TODO return person from Supplier
+        final Supplier<Person> getPerson = () -> person; // TODO return person from Supplier
 
         assertEquals(person, getPerson.get());
     }

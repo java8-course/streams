@@ -32,6 +32,8 @@ public class CollectorCombination {
         }
     }
 
+    //m1, m2 - аккумуляторы
+    //r1, r2 - результаты коллектора
     private static <T, M1, M2, R1, R2> Collector<T, Pair<M1, M2>, Pair<R1, R2>> paired(Collector<T, M1, R1> c1,
                                                                                        Collector<T, M2, R2> c2) {
         // TODO
