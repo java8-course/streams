@@ -32,12 +32,11 @@ public class StreamsExercise1 {
     public void getAllEpamEmployees() {
         final List<Employee> employees = Generator.generateEmployeeList();
 
-        final List<Person> personList = employees.stream()
+        final Set<Person> people = employees.stream()
                 .flatMap(this::getEmployeePairs)
                 .filter(p -> p.getEmployer().equals("epam"))
                 .map(PersonEmployerPair::getPerson)
-                .distinct()
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
     @Test
@@ -45,9 +44,20 @@ public class StreamsExercise1 {
         final List<Employee> employees = Generator.generateEmployeeList();
 
         final List<Person> personList = employees.stream()
-                .filter(employee -> employee.getJobHistory().get(0).getEmployer().equals("epam"))
+                .filter(employee -> employee.getJobHistory().stream().limit(1)
+                        .anyMatch(j -> j.getEmployer().equals("epam")))
                 .map(Employee::getPerson)
                 .collect(Collectors.toList());
+
+
+        for (Employee employee : employees) {
+            final String firstEmployer = employee.getJobHistory().get(0).getEmployer();
+            for (Person person : personList) {
+                if (firstEmployer.equals("epam") && person.equals(employee.getPerson())) {
+                    assertEquals(employee.getPerson(), person);
+                }
+            }
+        }
     }
 
     @Test
@@ -70,9 +80,6 @@ public class StreamsExercise1 {
                 .filter(j -> j.getEmployer().equals("epam"))
                 .mapToInt(JobHistoryEntry::getDuration)
                 .sum();
-
-
-        // TODO
 
         assertEquals(expected, result);
     }
