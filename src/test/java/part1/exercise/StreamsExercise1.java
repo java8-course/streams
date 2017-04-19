@@ -5,9 +5,7 @@ import data.JobHistoryEntry;
 import data.Person;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,7 +22,7 @@ public class StreamsExercise1 {
     @Test
     public void getAllEpamEmployees() {
         List<Employee> employees = generateEmployeeList();
-        List<Person> expected = new ArrayList<>();
+        Set<Person> expected = new HashSet<>();
 
         for (Employee employee : employees) {
             for (JobHistoryEntry entry : employee.getJobHistory()) {
@@ -34,14 +32,13 @@ public class StreamsExercise1 {
                 }
             }
         }
-        List<Person> epamEmployees = employees
+        Set<Person> epamEmployees = employees
                 .stream()
-                .map(StreamsExercise1::employeeToPairs)
-                .flatMap(Function.identity())
+                .flatMap(StreamsExercise1::employeeToPairs)
                 .filter(t -> t.getEmployer().equals("epam"))
                 .map(PersonEmployerPair::getPerson)
                 .distinct()
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
         assertEquals(expected, epamEmployees);
 
     }
@@ -62,7 +59,16 @@ public class StreamsExercise1 {
                 .map(Employee::getPerson)
                 .collect(Collectors.toList());
 
-        assertEquals(expected, epamEmployees);
+        final List<Person> epam = employees.stream()
+                .filter(t -> t.getJobHistory().stream()
+                        .limit(1)
+                        .findAny()
+                        .orElse(new JobHistoryEntry(-1, "Default", "Default"))
+                        .getEmployer().equals("epam"))
+                .map(Employee::getPerson)
+                .collect(Collectors.toList());
+
+        assertEquals(expected, epam);
     }
 
     @Test
@@ -79,12 +85,11 @@ public class StreamsExercise1 {
             }
         }
 
-
         final int result = employees.stream()
-                .map(t -> t.getJobHistory())
-                .flatMap(t -> t.stream())
+                .map(Employee::getJobHistory)
+                .flatMap(Collection::stream)
                 .filter(t -> t.getEmployer().equals("epam"))
-                .mapToInt(t -> t.getDuration())
+                .mapToInt(JobHistoryEntry::getDuration)
                 .sum();
 
         assertEquals(expected, result);
