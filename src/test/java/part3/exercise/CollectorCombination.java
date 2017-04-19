@@ -11,7 +11,9 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 
 import static java.util.stream.Collectors.*;
-
+/**
+ * Not done yet
+ */
 public class CollectorCombination {
 
     private static class Pair<A, B> {

@@ -6,7 +6,6 @@ import data.Person;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -134,7 +133,7 @@ public class StreamsExample {
 //                .collect(
 //                        () -> new HashMap<>(),
 //                        (m, p) -> {
-//                            final Set<Person> set = m.computeIfAbsent(p.getPosition(), (k) -> new HashSet<>());
+//                            final Set<Person> set = m.computeIfAbsent(p.getEmployer(), (k) -> new HashSet<>());
 //                            set.add(p.getPerson());
 //                        },
 //                        (m1, m2) -> {
@@ -166,7 +165,7 @@ public class StreamsExample {
             PersonPositionPair personPositionPair) {
         final HashMap<String, Set<Person>> result = new HashMap<>();
         result.putAll(u);
-        Set<Person> set = result.computeIfAbsent(personPositionPair.getPosition(), (k) -> new HashSet<>());
+        Set<Person> set = result.computeIfAbsent(personPositionPair.getEmployer(), (k) -> new HashSet<>());
         set.add(personPositionPair.getPerson());
         return result;
     }*/
@@ -209,9 +208,9 @@ public class StreamsExample {
                         e -> e.getJobHistory()
                                 .stream()
                                 .map(j -> new PersonPositionDuration(e.getPerson(), j.getPosition(), j.getDuration())));
-//        final Map<String, PersonPositionDuration> collect = personPositionDurationStream
+//        final Map<String, PersonEmployerDuration> collect = personPositionDurationStream
 //                .collect(toMap(
-//                        PersonPositionDuration::getPosition,
+//                        PersonEmployerDuration::getEmployer,
 //                        Function.identity(),
 //                        (p1, p2) -> p1.getDuration() > p2.getDuration() ? p1 : p2));
         return personPositionDurationStream
