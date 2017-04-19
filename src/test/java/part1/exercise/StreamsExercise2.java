@@ -75,8 +75,9 @@ public class StreamsExercise2 {
 
     private static PersonEmployerPair firstEmployerPersonPair(Employee employee) {
         final JobHistoryEntry jobHistoryEntry = employee.getJobHistory().stream()
-                .findFirst()
-                .get();
+                .limit(1)
+                .findAny()
+                .orElse(new JobHistoryEntry(-1, "Default", "Default"));
 
         return new PersonEmployerPair(employee.getPerson(), jobHistoryEntry.getEmployer());
     }
