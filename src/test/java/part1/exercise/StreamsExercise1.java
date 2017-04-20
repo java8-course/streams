@@ -35,7 +35,7 @@ public class StreamsExercise1 {
         List<Person> actualPersonList = employeeList.stream()
             .filter(employee -> employee.getJobHistory().stream()
                 .map(JobHistoryEntry::getEmployer)
-                .anyMatch(emp -> emp.equalsIgnoreCase("epam"))
+                .anyMatch("epam"::equalsIgnoreCase)
             )
             .map(Employee::getPerson)
             .collect(toList());
@@ -57,7 +57,7 @@ public class StreamsExercise1 {
         // TODO all persons with first experience in epam
         final List<Employee> employeeList = Generator.generateEmployeeList();
         List<Person> epamEmployees = employeeList.stream()
-            .filter(e -> e.getJobHistory().get(0).getEmployer().equals("epam"))
+            .filter(e -> e.getJobHistory().stream().limit(1).collect(toList()).get(0).getEmployer().equals("epam"))
             .map(Employee::getPerson)
             .collect(Collectors.toList());
         List<Person> expectedList = new ArrayList<>();
@@ -68,7 +68,7 @@ public class StreamsExercise1 {
                 expectedList.add(anEmployeeList.getPerson());
             }
         }
-        assertEquals(expectedList.size(), epamEmployees.size());
+        assertEquals(expectedList, epamEmployees);
     }
 
 
