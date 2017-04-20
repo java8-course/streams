@@ -6,12 +6,12 @@ import data.JobHistoryEntry;
 import data.Person;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static data.Generator.generateEmployeeList;
-import static java.util.stream.Collectors.groupingBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -37,6 +37,14 @@ public class StreamsExercise1 {
                 .filter(p -> p.getEmployer().equals("epam"))
                 .map(PersonEmployerPair::getPerson)
                 .collect(Collectors.toSet());
+
+        for (Employee employee : employees) {
+            for (JobHistoryEntry entry : employee.getJobHistory()) {
+                if (entry.getEmployer().equals("epam")) {
+                    assertTrue(people.contains(employee.getPerson()));
+                }
+            }
+        }
     }
 
     @Test
@@ -99,24 +107,6 @@ public class StreamsExercise1 {
 
         public String getEmployer() {
             return employer;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            PersonEmployerPair that = (PersonEmployerPair) o;
-
-            if (person != null ? !person.equals(that.person) : that.person != null) return false;
-            return employer != null ? employer.equals(that.employer) : that.employer == null;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = person != null ? person.hashCode() : 0;
-            result = 31 * result + (employer != null ? employer.hashCode() : 0);
-            return result;
         }
     }
 
