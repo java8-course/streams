@@ -22,14 +22,21 @@ public class LambdaExercise {
 
     @Test
     public void function() {
-        final Function<Person, String> getPersonName1 = null; // TODO get the name of person using expression lambda
+        final Person person = new Person("John", "Galt", 30);
 
-        final Function<Person, String> getPersonName2 = null; // TODO get the name of person using method reference
+        final Function<Person, String> getPersonName1 =
+                p -> person.getFirstName(); // TODO get the name of person using expression lambda
+
+        final Function<Person, String> getPersonName2 =
+                Person::getFirstName; // TODO get the name of person using method reference
 
         // TODO get the name of person and log it to System.out using statement lambda: {}
-        final Function<Person, String> getPersonNameAndLogIt = null;
+        final Function<Person, String> getPersonNameAndLogIt = p -> {
+            final String firstName = p.getFirstName();
+            System.out.println(firstName);
+            return firstName;
+        };
 
-        final Person person = new Person("John", "Galt", 30);
 
         assertEquals(person.getFirstName(), getPersonName1.apply(person));
         assertEquals(person.getFirstName(), getPersonName2.apply(person));
@@ -38,11 +45,13 @@ public class LambdaExercise {
 
     @Test
     public void combineFunctions() {
-        final Function<Person, String> getPersonName = null; // TODO get the name of person
+        final Person person = new Person("John", "Galt", 30);
+
+        final Function<Person, String> getPersonName = Person::getFirstName; // TODO get the name of person
 
         assertEquals("John", getPersonName.apply(new Person("John", "Galt", 30)));
 
-        final Function<String, Integer> getStringLength = null; // TODO get string length
+        final Function<String, Integer> getStringLength = o -> "ABC".length(); // TODO get string length
 
         assertEquals(Integer.valueOf(3), getStringLength.apply("ABC"));
 
@@ -52,7 +61,6 @@ public class LambdaExercise {
         // TODO get person name length using getPersonName and getStringLength with andThen
         final Function<Person, Integer> getPersonNameLength2 = null;
 
-        final Person person = new Person("John", "Galt", 30);
 
         assertEquals(Integer.valueOf(4), getPersonNameLength1.apply(person));
         assertEquals(Integer.valueOf(4), getPersonNameLength2.apply(person));
