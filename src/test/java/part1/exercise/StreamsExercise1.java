@@ -71,8 +71,28 @@ public class StreamsExercise1 {
 
     @Test
     public void getEmployeesStartedFromEpam() {
-        List<Person> epamEmployees = null;// TODO all persons with first experience in epam
-        throw new UnsupportedOperationException();
+        List<Employee> someEmployees = generateEmployeeList();
+
+        final List<Person> epamEmployees =
+                someEmployees.stream()
+                .flatMap(e -> employeeToPersonEmployer(e))
+                .filter(t -> t.getEmployer().equals("epam"))
+                .limit(1)
+                .map(p -> p.getPerson())
+                .collect(Collectors.toList());
+
+        List<Person> expected = new ArrayList<>();
+
+        for (Employee employee : someEmployees) {
+            for(JobHistoryEntry j : employee.getJobHistory()) {
+                if (j.getEmployer().equals("epam")) {
+                    expected.add(employee.getPerson());
+                    break;
+                }
+            }
+        }
+
+        assertEquals(epamEmployees, expected);
     }
 
     @Test
