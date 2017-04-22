@@ -134,7 +134,7 @@ public class CollectorsExercise2 {
         }
     }
 
-    private static class MapPair {
+    public static class MapPair {
         private final Map<String, Key> keyById;
         private final Map<String, List<Value>> valueById;
 
