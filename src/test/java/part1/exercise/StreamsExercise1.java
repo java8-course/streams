@@ -15,6 +15,7 @@ import static data.Generator.generateEmployeeList;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
+import static org.junit.Assert.assertEquals;
 
 public class StreamsExercise1 {
     // https://youtu.be/kxgo7Y4cdA8 Сергей Куксенко и Алексей Шипилёв — Через тернии к лямбдам, часть 1
@@ -25,14 +26,40 @@ public class StreamsExercise1 {
 
     @Test
     public void getAllEpamEmployees() {
-        List<Person> epamEmployees = null;// TODO all persons with experience in epam
-        throw new UnsupportedOperationException();
+        List<Employee> epamList = generateEmployeeList();// all persons with experience in epam
+        List<Person> epamEmployees = epamList.stream()
+                .filter(e -> e.getJobHistory()
+                        .stream()
+                        .map(JobHistoryEntry::getEmployer)
+                        .anyMatch(emp -> emp.equalsIgnoreCase("epam")))
+                .map(Employee::getPerson)
+                .collect(toList());
+        List<Person> expectedList = new ArrayList<>();
+        epamList.forEach(e -> {
+            for (JobHistoryEntry job : e.getJobHistory()) {
+                if (job.getEmployer().equals("epam")) {
+                    expectedList.add(e.getPerson());
+                    break;
+                }
+            }
+        });
+        assertEquals(epamEmployees, expectedList);
     }
 
     @Test
     public void getEmployeesStartedFromEpam() {
-        List<Person> epamEmployees = null;// TODO all persons with first experience in epam
-        throw new UnsupportedOperationException();
+        List<Employee> emp = generateEmployeeList();// all persons with first experience in epam
+        List<Person> epamEmployees = emp.stream()
+                .filter(e -> e.getJobHistory().get(0).getEmployer().equalsIgnoreCase("epam"))
+                .map(Employee::getPerson)
+                .collect(toList());
+        List<Person> expectedList = new ArrayList<>();
+        emp.forEach(e -> {
+            if (e.getJobHistory().get(0).getEmployer().equalsIgnoreCase("epam")) {
+                expectedList.add(e.getPerson());
+            }
+        });
+        assertEquals(epamEmployees, expectedList);
     }
 
     @Test
@@ -49,11 +76,12 @@ public class StreamsExercise1 {
             }
         }
 
-        // TODO
-        throw new UnsupportedOperationException();
-
-        // int result = ???
-        // assertEquals(expected, result);
+        int result = employees.stream()
+                .flatMap(e -> e.getJobHistory().stream())
+                .filter(emp -> emp.getEmployer().equalsIgnoreCase("epam"))
+                .mapToInt(JobHistoryEntry::getDuration)
+                .sum();
+        assertEquals(expected, result);
     }
 
 }
