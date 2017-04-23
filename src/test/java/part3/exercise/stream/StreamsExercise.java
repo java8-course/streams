@@ -6,11 +6,14 @@ import data.Person;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.comparingInt;
+import static java.util.stream.Collectors.*;
 import static org.junit.Assert.assertEquals;
 
 public class StreamsExercise {
@@ -19,7 +22,9 @@ public class StreamsExercise {
     public void getAllJobHistoryEntries() {
         final List<Employee> employees = getEmployees();
 
-        final List<JobHistoryEntry> jobHistoryEntries = null; // TODO
+        final List<JobHistoryEntry> jobHistoryEntries = employees.stream()
+                .flatMap(e -> e.getJobHistory().stream())
+                .collect(toList());
 
         assertEquals(22, jobHistoryEntries.size());
     }
@@ -29,12 +34,15 @@ public class StreamsExercise {
         // sum all durations for all persons
         final List<Employee> employees = getEmployees();
 
-        final int sumDurations = 0; // TODO
+        final int sumDurations = employees.stream()
+                .flatMap(e -> e.getJobHistory().stream())
+                .mapToInt(j -> j.getDuration())
+                .sum();
 
         assertEquals(72, sumDurations);
     }
 
-    private static class PersonEmployer{
+    private static class PersonEmployer {
         private final Person person;
         private final String employer;
 
@@ -64,7 +72,16 @@ public class StreamsExercise {
     public void indexPersonsByEmployer1() {
         final List<Employee> employees = getEmployees();
 
-        final Map<String, List<PersonEmployer>> index = null; // TODO
+        final Map<String, List<PersonEmployer>> index = employees.stream()
+                .flatMap(
+                        e -> e.getJobHistory().stream()
+                                .map(
+                                        j -> new PersonEmployer(e.getPerson(), j.getEmployer())
+                                )
+                )
+                .collect(
+                        groupingBy(PersonEmployer::getEmployer)
+                );
 
         assertEquals(11, index.get("epam").size());
     }
@@ -73,7 +90,16 @@ public class StreamsExercise {
     public void indexPersonsByEmployer2() {
         final List<Employee> employees = getEmployees();
 
-        final Map<String, List<Person>> index = null; // TODO
+        final Map<String, List<Person>> index = new HashMap<>();
+        employees.forEach(
+                e -> e.getJobHistory().forEach(
+                        j -> {
+                            String employer = j.getEmployer();
+                            index.computeIfAbsent(employer, k -> new ArrayList<Person>());
+                            index.get(employer).add(e.getPerson());
+                        }
+                )
+        );
 
         assertEquals(11, index.get("epam").size());
     }
@@ -105,8 +131,8 @@ public class StreamsExercise {
     }
 
     private PersonDuration sumAllPersonDurations(Employee e) {
-        // TODO
-        throw new UnsupportedOperationException();
+        int sum = e.getJobHistory().stream().mapToInt(j -> j.getDuration()).sum();
+        return new PersonDuration(e.getPerson(), sum);
     }
 
     @Test
@@ -114,7 +140,9 @@ public class StreamsExercise {
         // sum all durations for each person
         final List<Employee> employees = getEmployees();
 
-        final Map<Person, Integer> personDuration = null; // TODO use sumAllPersonDurations
+        final Map<Person, Integer> personDuration = employees.stream()
+                .map(this::sumAllPersonDurations)
+                .collect(toMap(PersonDuration::getPerson, PersonDuration::getDuration));
 
         assertEquals(Integer.valueOf(8), personDuration.get(new Person("John", "Doe", 24)));
     }
@@ -138,15 +166,23 @@ public class StreamsExercise {
     }
 
     private static PersonPositionIndex getPersonPositionIndex(Employee e) {
-        // TODO
-        throw new UnsupportedOperationException();
+        Map<String, Integer> index = e.getJobHistory().stream()
+                .collect(
+                        groupingBy(
+                                JobHistoryEntry::getPosition,
+                                summingInt(JobHistoryEntry::getDuration)
+                        )
+                );
+        return new PersonPositionIndex(e.getPerson(), index);
     }
 
     @Test
     public void getSumDurationsForPersonByPosition() {
         final List<Employee> employees = getEmployees();
 
-        final List<PersonPositionIndex> personIndexes = null; // TODO use getPersonPositionIndex
+        final List<PersonPositionIndex> personIndexes = employees.stream()
+                .map(StreamsExercise::getPersonPositionIndex)
+                .collect(toList());
 
         assertEquals(1, personIndexes.get(3).getDurationByPositionIndex().size());
     }
@@ -179,8 +215,15 @@ public class StreamsExercise {
     public void getDurationsForEachPersonByPosition() {
         final List<Employee> employees = getEmployees();
 
-        final List<PersonPositionDuration> personPositionDurations =  null; // TODO
-
+        final List<PersonPositionDuration> personPositionDurations = employees.stream()
+                .map(StreamsExercise::getPersonPositionIndex)
+                .flatMap(
+                        e -> e.getDurationByPositionIndex()
+                                .entrySet()
+                                .stream()
+                                .map(p -> new PersonPositionDuration(e.getPerson(), p.getKey(), p.getValue()))
+                )
+                .collect(toList());
 
         assertEquals(17, personPositionDurations.size());
     }
@@ -190,8 +233,21 @@ public class StreamsExercise {
         // Get person with max duration on given position
         final List<Employee> employees = getEmployees();
 
-        final Map<String, PersonPositionDuration> coolestPersonByPosition = null;// TODO
-
+        final Map<String, PersonPositionDuration> coolestPersonByPosition = employees.stream()
+                .map(StreamsExercise::getPersonPositionIndex)
+                .flatMap(
+                        e -> e.getDurationByPositionIndex()
+                                .entrySet()
+                                .stream()
+                                .map(p -> new PersonPositionDuration(e.getPerson(), p.getKey(), p.getValue()))
+                )
+                .collect(
+                        toMap(
+                                PersonPositionDuration::getPosition,
+                                Function.identity(),
+                                BinaryOperator.maxBy(comparingInt(PersonPositionDuration::getDuration))
+                        )
+                );
 
         assertEquals(new Person("John", "White", 22), coolestPersonByPosition.get("QA").getPerson());
     }
@@ -201,8 +257,23 @@ public class StreamsExercise {
         // Get person with max duration on given position
         final List<Employee> employees = getEmployees();
 
-        final Map<String, Person> coolestPersonByPosition = null; // TODO
-
+        final Map<String, Person> coolestPersonByPosition = employees.stream()
+                .map(StreamsExercise::getPersonPositionIndex)
+                .flatMap(
+                        e -> e.getDurationByPositionIndex()
+                                .entrySet()
+                                .stream()
+                                .map(p -> new PersonPositionDuration(e.getPerson(), p.getKey(), p.getValue()))
+                )
+                .collect(
+                        groupingBy(
+                                PersonPositionDuration::getPosition,
+                                collectingAndThen(
+                                        maxBy(comparing(PersonPositionDuration::getDuration)),
+                                        ppd -> ppd.get().getPerson()
+                                )
+                        )
+                );
 
         assertEquals(new Person("John", "White", 22), coolestPersonByPosition.get("QA"));
     }
