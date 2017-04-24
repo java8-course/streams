@@ -3,10 +3,8 @@ package part1.exercise;
 import data.Employee;
 import data.JobHistoryEntry;
 import data.Person;
-import org.junit.Assert;
 import org.junit.Test;
 
-import javax.swing.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -40,10 +38,41 @@ public class StreamsExercise1 {
         }
     }
 
-    private static Stream<PersonEmployer> employeeToPersonEmployer (Employee employee) {
+
+    private static class PersonEmployerDuration extends PersonEmployer {
+        private final int duration;
+
+        public int getDuration() {
+            return duration;
+        }
+
+        public PersonEmployerDuration(Person person, String employer, int duration) {
+            super(person, employer);
+            this.duration = duration;
+        }
+    }
+
+    private static Stream<PersonEmployer> employeeToPersonEmployer(Employee employee) {
         return employee.getJobHistory().stream()
                 .map(t -> t.getEmployer())
                 .map(e -> new PersonEmployer(employee.getPerson(), e));
+    }
+
+    private static Stream<PersonEmployer> epamFirstEmployeeToPersonEmployer(Employee employee) {
+        return employee.getJobHistory().stream()
+                .map(t -> t.getEmployer())
+                .map(e -> new PersonEmployer(employee.getPerson(), e))
+                .limit(1);
+    }
+
+    private static Stream<PersonEmployerDuration> employeeToPersonEmployerDuration(Employee employee) {
+        return employee.getJobHistory().stream()
+                .map(jhe -> new PersonEmployerDuration(employee.getPerson(), jhe.getEmployer(), jhe.getDuration()));
+
+
+//        return employee.getJobHistory().stream()
+//                .flatMap(d -> employee.getJobHistory().stream()
+//                        .map(e -> new PersonEmployerDuration(employee.getPerson(), e.getEmployer(), e.getDuration())));
     }
 
     @Test
@@ -59,7 +88,7 @@ public class StreamsExercise1 {
         List<Person> expected = new ArrayList<>();
 
         for (Employee employee : someEmployees) {
-            for(JobHistoryEntry j : employee.getJobHistory()) {
+            for (JobHistoryEntry j : employee.getJobHistory()) {
                 if (j.getEmployer().equals("epam")) {
                     expected.add(employee.getPerson());
                 }
@@ -75,25 +104,22 @@ public class StreamsExercise1 {
 
         final List<Person> epamEmployees =
                 someEmployees.stream()
-                .flatMap(e -> employeeToPersonEmployer(e))
-                .filter(t -> t.getEmployer().equals("epam"))
-                .limit(1)
-                .map(p -> p.getPerson())
-                .collect(Collectors.toList());
+                        .flatMap(e -> epamFirstEmployeeToPersonEmployer(e))
+                        .filter(t -> t.getEmployer().equals("epam"))
+                        .map(p -> p.getPerson())
+                        .collect(Collectors.toList());
 
         List<Person> expected = new ArrayList<>();
 
         for (Employee employee : someEmployees) {
-            for(JobHistoryEntry j : employee.getJobHistory()) {
-                if (j.getEmployer().equals("epam")) {
-                    expected.add(employee.getPerson());
-                    break;
-                }
+            if (employee.getJobHistory().get(0).getEmployer().equals("epam")) {
+                expected.add(employee.getPerson());
             }
         }
 
         assertEquals(epamEmployees, expected);
     }
+
 
     @Test
     public void sumEpamDurations() {
@@ -109,11 +135,17 @@ public class StreamsExercise1 {
             }
         }
 
-        // TODO
-        throw new UnsupportedOperationException();
+        final int result =
+                employees.stream()
+                        .flatMap(e -> employeeToPersonEmployerDuration(e))
+                        .filter(j -> j.getEmployer().equals("epam"))
+                        .mapToInt(s -> s.getDuration())
+                        .sum();
 
-        // int result = ???
-        // assertEquals(expected, result);
+         assertEquals(expected, result);
     }
 
+
 }
+
+
