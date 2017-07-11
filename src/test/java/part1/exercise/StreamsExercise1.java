@@ -4,8 +4,8 @@ import data.Employee;
 import data.JobHistoryEntry;
 import org.junit.Test;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import static data.Generator.generateEmployeeList;
 import static java.util.stream.Collectors.toList;
@@ -20,12 +20,17 @@ public class StreamsExercise1 {
 
     @Test
     public void getAllEpamEmployees() {
-        List<Employee> employees = generateEmployeeList();// all persons with experience in epam
+        List<Employee> employees = generateEmployeeList(); // all persons with experience in epam
 
         List<Employee> epamEmployees = employees.stream()
-                .filter(employee -> employee.getJobHistory().stream()
-                                .anyMatch(jobHistory -> jobHistory.getEmployer().equals("epam")))
+                .filter(this::workedInEpam)
                 .collect(toList());
+    }
+
+    private boolean workedInEpam(Employee employee) {
+        return employee.getJobHistory().stream()
+                .map(JobHistoryEntry::getEmployer)
+                .anyMatch("epam"::equals);
     }
 
     @Test
@@ -33,11 +38,15 @@ public class StreamsExercise1 {
         List<Employee> employees = generateEmployeeList();// all persons with first experience in epam
 
         List<Employee> epamEmployees = employees.stream()
-                .filter(employee -> employee.getJobHistory().stream()
-                        .findFirst()
-                        .filter(jobHistory -> jobHistory.getEmployer().equals("epam"))
-                        .isPresent())
+                .filter(this::workedFirstlyInEpam)
                 .collect(toList());
+    }
+
+    private boolean workedFirstlyInEpam(Employee employee) {
+        return employee.getJobHistory().stream()
+                .findFirst()
+                .filter("epam"::equals)
+                .isPresent();
     }
 
     @Test
@@ -55,11 +64,17 @@ public class StreamsExercise1 {
         }
 
          int result = employees.stream()
-                 .flatMapToInt(employee -> employee.getJobHistory().stream()
-                         .filter(jobHistory -> jobHistory.getEmployer().equals("epam"))
-                         .flatMapToInt(jobHistory -> IntStream.of(jobHistory.getDuration())))
+                 .map(Employee::getJobHistory)
+                 .flatMap(Collection::stream)
+                 .filter(this::epamJobHistoryEntry)
+                 .mapToInt(JobHistoryEntry::getDuration)
                  .sum();
+
          assertEquals(expected, result);
+    }
+
+    private boolean epamJobHistoryEntry(JobHistoryEntry jobHistoryEntry) {
+        return jobHistoryEntry.getEmployer().equals("epam");
     }
 
 }
