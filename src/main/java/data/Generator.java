@@ -12,6 +12,7 @@ import static java.util.stream.Collectors.toList;
  * @author Simon Popugaev
  */
 public class Generator {
+    private static final int MAX_EMPLOYEE_AMOUNT = 15;
 
     public static String generateString() {
         final String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -60,7 +61,8 @@ public class Generator {
     }
 
     public static List<Employee> generateEmployeeList() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return Stream.generate(Generator::generateEmployee)
+                .limit(ThreadLocalRandom.current().nextInt(MAX_EMPLOYEE_AMOUNT))
+                .collect(toList());
     }
 }
