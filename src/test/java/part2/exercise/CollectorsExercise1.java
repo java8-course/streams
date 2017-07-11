@@ -6,17 +6,12 @@ import data.Person;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
 
 public class CollectorsExercise1 {
 
@@ -51,18 +46,46 @@ public class CollectorsExercise1 {
         }
     }
 
+    public Stream<PersonPositionDuration> convert(Employee employee) {
+        return employee.getJobHistory().stream()
+                .map(j -> new PersonPositionDuration(employee.getPerson(), j.getPosition(), j.getDuration()));
+    }
+
+    public Stream<PersonPositionDuration> convertToSum(final Employee employee) {
+        return employee.getJobHistory()
+                .stream()
+                .collect(
+                        groupingBy(
+                                JobHistoryEntry::getPosition,
+                                collectingAndThen(Collectors.summarizingInt(JobHistoryEntry::getDuration), IntSummaryStatistics::getSum)
+                        ))
+                .entrySet()
+                .stream()
+                .map((k) -> new PersonPositionDuration(employee.getPerson(), k.getKey(), k.getValue().intValue()));
+    }
+
     // With the longest duration on single job
     private Map<String, Person> getCoolestByPosition(List<Employee> employees) {
-        // First option
-        // Collectors.maxBy
-        // Collectors.collectingAndThen
-        // Collectors.groupingBy
+        final Map<String, Person> collect = employees
+                .stream()
+                .flatMap(this::convert)
+                .collect(groupingBy(PersonPositionDuration::getPosition,
+                        collectingAndThen(Collectors.maxBy(Comparator.comparingInt(PersonPositionDuration::getDuration)),
+                                e -> e.map(PersonPositionDuration::getPerson).get())));
 
-        // Second option
-        // Collectors.toMap
-        // iterate twice: stream...collect(...).stream()...
-        // TODO
-        throw new UnsupportedOperationException();
+        final Map<String, Person> collect1 = employees
+                .stream()
+                .flatMap(this::convert)
+                .collect(
+                        toMap(
+                                PersonPositionDuration::getPosition,
+                                Function.identity(),
+                                BinaryOperator.maxBy(Comparator.comparingInt(PersonPositionDuration::getDuration))
+                        ))
+                .entrySet()
+                .stream()
+                .collect(toMap(Map.Entry::getKey, e -> e.getValue().getPerson()));
+        return collect;
     }
 
     @Test
@@ -75,8 +98,15 @@ public class CollectorsExercise1 {
     // With the longest sum duration on this position
     // { John Doe, [{dev, google, 4}, {dev, epam, 4}] } предпочтительнее, чем { A B, [{dev, google, 6}, {QA, epam, 100}]}
     private Map<String, Person> getCoolestByPosition2(List<Employee> employees) {
-        // TODO
-        throw new UnsupportedOperationException();
+        return employees
+                .stream()
+                .flatMap(this::convertToSum)
+                .collect(groupingBy
+                        (PersonPositionDuration::getPosition,
+                                collectingAndThen(Collectors.maxBy(Comparator.comparingInt(PersonPositionDuration::getDuration)),
+                                        e -> e.map(PersonPositionDuration::getPerson).get()
+                                )
+                        ));
     }
 
     private List<Employee> getEmployees() {
