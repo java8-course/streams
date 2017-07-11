@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
 
 public class CollectorsExercise1 {
 
@@ -61,8 +61,12 @@ public class CollectorsExercise1 {
         // Second option
         // Collectors.toMap
         // iterate twice: stream...collect(...).stream()...
-        // TODO
-        throw new UnsupportedOperationException();
+        return employees.stream()
+                .flatMap(e -> e.getJobHistory().stream()
+                        .map(j -> new PersonPositionDuration(e.getPerson(), j.getPosition(), j.getDuration())))
+                .collect(groupingBy(PersonPositionDuration::getPosition,
+                        collectingAndThen(maxBy(Comparator.comparing(PersonPositionDuration::getDuration)),
+                                p -> p.get().getPerson())));
     }
 
     @Test
