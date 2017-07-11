@@ -6,7 +6,7 @@ import data.Person;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
 import static org.junit.Assert.assertEquals;
@@ -103,24 +103,16 @@ public class StreamsExercise2 {
     public void greatestExperiencePerEmployer() {
         final List<Employee> employees = getEmployees();
 
-        final Map<String, Map<PersonEmploerVeryUseful, IntSummaryStatistics>> collect = employees
+        final Map<String, Optional<Person>> collect = employees
                 .stream()
                 .flatMap(e -> e.getJobHistory()
                         .stream()
                         .map(j -> new PersonEmploerVeryUseful(e.getPerson(), j.getEmployer(), j.getDuration())))
                 .collect(groupingBy(PersonEmploerVeryUseful::getEmployer,
-                        groupingBy(Function.identity(),
-                                summarizingInt(PersonEmploerVeryUseful::getDuration))));
+                        collectingAndThen(Collectors.maxBy(Comparator.comparingInt(PersonEmploerVeryUseful::getDuration)),
+                                e -> e.map(PersonEmploerVeryUseful::getPerson))));
 
-        final Map<String, Person> collect1 = collect.entrySet()
-                .stream()
-                .flatMap(p -> p.getValue().entrySet()
-                        .stream()
-                        .sorted((r, l) -> Long.valueOf(l.getValue().getSum()).compareTo(r.getValue().getSum()))
-                        .limit(1))
-                .map(Map.Entry::getKey)
-                .collect(toMap(PersonEmploerVeryUseful::getEmployer, PersonEmploerVeryUseful::getPerson));
-        assertEquals(new Person("John", "White", 28), collect1.get("epam"));
+        assertEquals(new Person("John", "White", 28), collect.get("epam").get());
     }
 
 
