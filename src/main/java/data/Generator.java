@@ -1,6 +1,5 @@
 package data;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -61,9 +60,11 @@ public class Generator {
     }
 
     public static List<Employee> generateEmployeeList() {
-        List<Employee> list = new ArrayList<>();
-        list.add(new Employee(generatePerson(), generateJobHistory()));
-        list.add(new Employee(generatePerson(), generateJobHistory()));
-        return list;
+        int maxLength = 10;
+        final int length = ThreadLocalRandom.current().nextInt(maxLength) + 1;
+
+        return Stream.generate(Generator::generateEmployee)
+                .limit(length)
+                .collect(toList());
     }
 }
