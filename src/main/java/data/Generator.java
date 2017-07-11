@@ -1,5 +1,6 @@
 package data;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -60,7 +61,9 @@ public class Generator {
     }
 
     public static List<Employee> generateEmployeeList() {
-        // TODO
-        throw new UnsupportedOperationException();
+        List<Employee> list = new ArrayList<>();
+        list.add(new Employee(generatePerson(), generateJobHistory()));
+        list.add(new Employee(generatePerson(), generateJobHistory()));
+        return list;
     }
 }
