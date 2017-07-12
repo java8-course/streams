@@ -6,17 +6,13 @@ import data.Person;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
+import static org.junit.Assert.assertEquals;
 
 public class CollectorsExercise1 {
 
@@ -53,16 +49,41 @@ public class CollectorsExercise1 {
 
     // With the longest duration on single job
     private Map<String, Person> getCoolestByPosition(List<Employee> employees) {
-        // First option
-        // Collectors.maxBy
-        // Collectors.collectingAndThen
-        // Collectors.groupingBy
+        Map<String, Person> collect = employees.stream()
+                .flatMap(
+                        this::toPersonPositionDuration
+                )
+                .collect(
+                        groupingBy(
+                                PersonPositionDuration::getPosition,
+                                collectingAndThen(maxBy(Comparator.comparing(PersonPositionDuration::getDuration)), p -> p.get().getPerson())
+                        )
+                );
 
-        // Second option
-        // Collectors.toMap
-        // iterate twice: stream...collect(...).stream()...
-        // TODO
-        throw new UnsupportedOperationException();
+        Map<String, Person> collect1 = employees.stream()
+                .flatMap(this::toPersonPositionDuration)
+                .collect(Collectors.toMap(
+                        PersonPositionDuration::getPosition,
+                        Function.identity(),
+                        BinaryOperator.maxBy(Comparator.comparing(PersonPositionDuration::getDuration))
+                ))
+                .entrySet().stream()
+                .collect(
+                        toMap(
+                                Map.Entry::getKey,
+                                t -> t.getValue().getPerson()
+                        )
+                );
+
+
+        assertEquals(collect, collect);
+
+        return collect;
+    }
+
+    private Stream<? extends PersonPositionDuration> toPersonPositionDuration(Employee employee) {
+        return employee.getJobHistory().stream()
+                .map(jobHistoryEntry -> new PersonPositionDuration(employee.getPerson(), jobHistoryEntry.getPosition(), jobHistoryEntry.getDuration()));
     }
 
     @Test
@@ -75,8 +96,44 @@ public class CollectorsExercise1 {
     // With the longest sum duration on this position
     // { John Doe, [{dev, google, 4}, {dev, epam, 4}] } предпочтительнее, чем { A B, [{dev, google, 6}, {QA, epam, 100}]}
     private Map<String, Person> getCoolestByPosition2(List<Employee> employees) {
-        // TODO
-        throw new UnsupportedOperationException();
+        return employees.stream()
+                .flatMap(this::toExclusivePersonPositionDuration)
+                .collect(
+                        groupingBy(
+                                PersonPositionDuration::getPosition,
+                                collectingAndThen(maxBy(Comparator.comparing(PersonPositionDuration::getDuration)), p -> p.get().getPerson())
+                        )
+                );
+                /*.collect(
+                        toMap(
+                                PersonPositionDuration::getPosition,
+                                Function.identity(),
+                                (p1, p2) -> p1.getDuration() > p2.getDuration() ? p1 : p2
+                        )
+                ).entrySet()
+                .stream()
+                .collect(
+                        toMap(
+                                Map.Entry::getKey,
+                                e -> e.getValue().getPerson()
+                        )
+                );*/
+    }
+
+    private Stream<? extends PersonPositionDuration> toExclusivePersonPositionDuration(Employee employee) {
+        return employee.getJobHistory()
+                .stream()
+                .collect(
+                        toMap(JobHistoryEntry::getPosition,
+                                JobHistoryEntry::getDuration,
+                                (d1, d2) -> d1 + d2
+                        )
+                )
+                .entrySet()
+                .stream()
+                .map(
+                        entry -> new PersonPositionDuration(employee.getPerson(), entry.getKey(), entry.getValue())
+                );
     }
 
     private List<Employee> getEmployees() {
