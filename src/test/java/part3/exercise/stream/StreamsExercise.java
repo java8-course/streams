@@ -36,7 +36,7 @@ public class StreamsExercise {
                 .mapToInt(JobHistoryEntry::getDuration)
                 .sum();
 
-        assertEquals(72, sumDurations);
+        assertEquals(74, sumDurations);
     }
 
     private Stream<? extends JobHistoryEntry> toJobHistoryEntry(Employee employee) {
@@ -278,9 +278,12 @@ public class StreamsExercise {
                                 .map(pair -> new PersonPositionDuration(personPositionIndex.getPerson(), pair.getKey(), pair.getValue()))
                 )
                 .collect(
-                        Collectors.toMap(
+                        Collectors.groupingBy(
                                 PersonPositionDuration::getPosition,
-                                PersonPositionDuration::getPerson
+                                Collectors.collectingAndThen(
+                                        Collectors.maxBy(Comparator.comparing(PersonPositionDuration::getDuration)),
+                                        optional -> optional.get().getPerson()
+                                )
                         )
                 );
 
@@ -303,7 +306,7 @@ public class StreamsExercise {
                 new Employee(
                         new Person("John", "White", 22),
                         Collections.singletonList(
-                                new JobHistoryEntry(6, "QA", "epam")
+                                new JobHistoryEntry(8, "QA", "epam")
                         )),
                 new Employee(
                         new Person("John", "Galt", 23),
