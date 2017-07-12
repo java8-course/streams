@@ -9,8 +9,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
-
 public class StreamsExercise2 {
     // https://youtu.be/kxgo7Y4cdA8 Сергей Куксенко и Алексей Шипилёв — Через тернии к лямбдам, часть 1
     // https://youtu.be/JRBWBJ6S4aU Сергей Куксенко и Алексей Шипилёв — Через тернии к лямбдам, часть 2
@@ -55,17 +53,32 @@ public class StreamsExercise2 {
 
     @Test
     public void indexByFirstEmployer() {
-        Map<String, List<Person>> employeesIndex = null;// TODO
-        throw new UnsupportedOperationException();
+        Stream<PersonEmployerPair> personFirstEmployerPairStream = getEmployees().stream()
+                .flatMap(this::toPersonAndFirstEmployerPair);
+
+        Map<String, Set<Person>> employeesIndex = personFirstEmployerPairStream
+                .collect(Collectors.groupingBy(
+                        PersonEmployerPair::getEmployer,
+                        Collectors.mapping(PersonEmployerPair::getPerson, Collectors.toSet())));
     }
 
+    private Stream<PersonEmployerPair> toPersonAndFirstEmployerPair(Employee employee) {
+        return employee.getJobHistory().stream()
+                .limit(1)
+                .map(jhe -> new PersonEmployerPair(employee.getPerson(), jhe.getEmployer()));
+    }
     @Test
     public void greatestExperiencePerEmployer() {
-        Map<String, Person> employeesIndex = null;// TODO
+        Stream<PersonEmployerPair> personGreatestEmployerPairStream = getEmployees().stream()
+                .flatMap(this::toPersonAndFirstEmployerPair);
 
-        assertEquals(new Person("John", "White", 28), employeesIndex.get("epam"));
+//        Map<String, List<Person>> employeesIndex = personGreatestEmployerPairStream
+//                .collect(Collectors.groupingBy(
+//                        PersonEmployerPair::getEmployer,
+//                        Collectors.maxBy(Comparator.comparingInt())));
+
+//        assertEquals(new Person("John", "White", 28), employeesIndex.get("epam"));
     }
-
 
     private List<Employee> getEmployees() {
         return Arrays.asList(
