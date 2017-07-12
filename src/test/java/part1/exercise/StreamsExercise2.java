@@ -3,17 +3,16 @@ package part1.exercise;
 import data.Employee;
 import data.JobHistoryEntry;
 import data.Person;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
+import java.util.*;
 
-import static data.Generator.generateEmployeeList;
 import static java.util.stream.Collectors.*;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class StreamsExercise2 {
     // https://youtu.be/kxgo7Y4cdA8 Сергей Куксенко и Алексей Шипилёв — Через тернии к лямбдам, часть 1
@@ -24,21 +23,81 @@ public class StreamsExercise2 {
 
     // TODO class PersonEmployerPair
 
+    @Data
+    @AllArgsConstructor
+    private static class Pair<F, S> {
+        private F first;
+        private S second;
+    }
+
     @Test
     public void employersStuffLists() {
-        Map<String, List<Person>> employersStuffLists = null;// TODO
-        throw new UnsupportedOperationException();
+        Map<String, List<Person>> expected = new HashMap<>();
+        for (Employee e : getEmployees()){
+            e.getJobHistory().forEach(j -> {
+                final String employer = j.getEmployer();
+                if (expected.containsKey(employer))
+                    expected.get(employer).add(e.getPerson());
+                else {
+                    List<Person> list = new ArrayList<>();
+                    list.add(e.getPerson());
+                    expected.put(employer, list);
+                }
+            });
+        }
+
+        // TODO
+        Map<String, List<Person>> actual = getEmployees().stream()
+                .flatMap(e -> e.getJobHistory().stream()
+                                    .map(j -> new Pair<>(j.getEmployer(), e.getPerson())))
+                .collect(groupingBy(
+                        Pair::getFirst,
+                        mapping(Pair::getSecond, toList())
+                ));
+        assertThat(actual, is(expected));
     }
 
     @Test
     public void indexByFirstEmployer() {
-        Map<String, List<Person>> employeesIndex = null;// TODO
-        throw new UnsupportedOperationException();
+        Map<String, List<Person>> expected = new HashMap<>();
+        for (Employee e : getEmployees()){
+            if (e.getJobHistory().size() > 0) {
+                final String firstEmployer = e.getJobHistory().get(0).getEmployer();
+                if (expected.containsKey(firstEmployer))
+                    expected.get(firstEmployer).add(e.getPerson());
+                else {
+                    List<Person> list = new ArrayList<>();
+                    list.add(e.getPerson());
+                    expected.put(firstEmployer, list);
+                }
+            }
+        }
+
+        // TODO
+        Map<String, List<Person>> actual = getEmployees().stream()
+                .flatMap(e -> e.getJobHistory().stream().limit(1)
+                        .map(j -> new Pair<>(j.getEmployer(), e.getPerson())))
+                .collect(groupingBy(
+                        Pair::getFirst,
+                        mapping(Pair::getSecond, toList())
+                ));
+        assertThat(actual, is(expected));
     }
 
     @Test
     public void greatestExperiencePerEmployer() {
-        Map<String, Person> employeesIndex = null;// TODO
+        // TODO
+        Map<String, Person> employeesIndex = getEmployees().stream()
+                .flatMap(e -> e.getJobHistory().stream().limit(1)
+                        .map(j -> new Pair<>(new Pair<>(j.getEmployer(), e.getPerson()), j.getDuration())))
+                .collect(
+                        groupingBy(
+                            t -> t.getFirst().getFirst(),
+                            collectingAndThen(
+                                    maxBy(Comparator.comparingInt(Pair::getSecond)),
+                                    p -> p.get().getFirst().getSecond()
+                            )
+                ));
 
         assertEquals(new Person("John", "White", 28), employeesIndex.get("epam"));
     }
