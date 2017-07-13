@@ -13,6 +13,8 @@ import static java.util.stream.Collectors.toList;
  */
 public class Generator {
 
+    private static final int EMPLOYEES_COUNT = 12;
+
     public static String generateString() {
         final String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         final int maxLength = 10;
@@ -60,7 +62,8 @@ public class Generator {
     }
 
     public static List<Employee> generateEmployeeList() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return Stream.generate(Generator::generateEmployee)
+                .limit(EMPLOYEES_COUNT)
+                .collect(toList());
     }
 }
