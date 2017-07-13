@@ -9,6 +9,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Comparator.comparingInt;
+import static java.util.stream.Collectors.*;
+import static org.junit.Assert.assertEquals;
+
 public class StreamsExercise2 {
     // https://youtu.be/kxgo7Y4cdA8 Сергей Куксенко и Алексей Шипилёв — Через тернии к лямбдам, часть 1
     // https://youtu.be/JRBWBJ6S4aU Сергей Куксенко и Алексей Шипилёв — Через тернии к лямбдам, часть 2
@@ -41,7 +45,7 @@ public class StreamsExercise2 {
                 .flatMap(this::toPersonEmployerPair);
 
         Map<String, Set<Person>> employersStuffLists = personEmployerPairStream
-                .collect(Collectors.groupingBy(
+                .collect(groupingBy(
                                 PersonEmployerPair::getEmployer,
                                 Collectors.mapping(PersonEmployerPair::getPerson, Collectors.toSet())));
     }
@@ -50,14 +54,13 @@ public class StreamsExercise2 {
         return employee.getJobHistory().stream()
                 .map(jhe -> new PersonEmployerPair(employee.getPerson(), jhe.getEmployer()));
     }
-
     @Test
     public void indexByFirstEmployer() {
         Stream<PersonEmployerPair> personFirstEmployerPairStream = getEmployees().stream()
                 .flatMap(this::toPersonAndFirstEmployerPair);
 
         Map<String, Set<Person>> employeesIndex = personFirstEmployerPairStream
-                .collect(Collectors.groupingBy(
+                .collect(groupingBy(
                         PersonEmployerPair::getEmployer,
                         Collectors.mapping(PersonEmployerPair::getPerson, Collectors.toSet())));
     }
@@ -67,17 +70,49 @@ public class StreamsExercise2 {
                 .limit(1)
                 .map(jhe -> new PersonEmployerPair(employee.getPerson(), jhe.getEmployer()));
     }
+
+    private static class PersonEmployerDuration {
+
+        private final Person person;
+        private final String employer;
+        private final int duration;
+        public PersonEmployerDuration(Person person, String employer, int duration) {
+            this.person = person;
+            this.employer = employer;
+            this.duration = duration;
+        }
+
+        public Person getPerson() {
+            return person;
+        }
+
+        public String getEmployer() {
+            return employer;
+        }
+
+        public int getDuration() {
+            return duration;
+        }
+
+    }
+
+    private Stream<PersonEmployerDuration> toPersonEmployerDuration(Employee employee) {
+        return employee.getJobHistory().stream()
+                .map(jhe -> new PersonEmployerDuration(employee.getPerson(), jhe.getEmployer(), jhe.getDuration()));
+    }
+
     @Test
     public void greatestExperiencePerEmployer() {
-        Stream<PersonEmployerPair> personGreatestEmployerPairStream = getEmployees().stream()
-                .flatMap(this::toPersonAndFirstEmployerPair);
+        Stream<PersonEmployerDuration> personEmployerDurationStream = getEmployees().stream()
+                .flatMap(this::toPersonEmployerDuration);
 
-//        Map<String, List<Person>> employeesIndex = personGreatestEmployerPairStream
-//                .collect(Collectors.groupingBy(
-//                        PersonEmployerPair::getEmployer,
-//                        Collectors.maxBy(Comparator.comparingInt())));
+        Map<String, Person> employeesIndex = personEmployerDurationStream
+                .collect(groupingBy(PersonEmployerDuration::getEmployer,
+                                collectingAndThen(
+                                        maxBy(comparingInt(PersonEmployerDuration::getDuration)),
+                                        o -> o.get().getPerson())));
 
-//        assertEquals(new Person("John", "White", 28), employeesIndex.get("epam"));
+        assertEquals(new Person("John", "White", 28), employeesIndex.get("epam"));
     }
 
     private List<Employee> getEmployees() {
