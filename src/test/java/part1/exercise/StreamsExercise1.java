@@ -2,19 +2,14 @@ package part1.exercise;
 
 import data.Employee;
 import data.JobHistoryEntry;
-import data.Person;
 import org.junit.Test;
 
-import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import java.util.Collection;
+import java.util.List;
 
 import static data.Generator.generateEmployeeList;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
+import static org.junit.Assert.assertEquals;
 
 public class StreamsExercise1 {
     // https://youtu.be/kxgo7Y4cdA8 Сергей Куксенко и Алексей Шипилёв — Через тернии к лямбдам, часть 1
@@ -25,14 +20,33 @@ public class StreamsExercise1 {
 
     @Test
     public void getAllEpamEmployees() {
-        List<Person> epamEmployees = null;// TODO all persons with experience in epam
-        throw new UnsupportedOperationException();
+        List<Employee> employees = generateEmployeeList(); // all persons with experience in epam
+
+        List<Employee> epamEmployees = employees.stream()
+                .filter(this::workedInEpam)
+                .collect(toList());
+    }
+
+    private boolean workedInEpam(Employee employee) {
+        return employee.getJobHistory().stream()
+                .map(JobHistoryEntry::getEmployer)
+                .anyMatch("epam"::equals);
     }
 
     @Test
     public void getEmployeesStartedFromEpam() {
-        List<Person> epamEmployees = null;// TODO all persons with first experience in epam
-        throw new UnsupportedOperationException();
+        List<Employee> employees = generateEmployeeList();// all persons with first experience in epam
+
+        List<Employee> epamEmployees = employees.stream()
+                .filter(this::workedFirstlyInEpam)
+                .collect(toList());
+    }
+
+    private boolean workedFirstlyInEpam(Employee employee) {
+        return employee.getJobHistory().stream()
+                .findFirst()
+                .filter("epam"::equals)
+                .isPresent();
     }
 
     @Test
@@ -49,11 +63,18 @@ public class StreamsExercise1 {
             }
         }
 
-        // TODO
-        throw new UnsupportedOperationException();
+         int result = employees.stream()
+                 .map(Employee::getJobHistory)
+                 .flatMap(Collection::stream)
+                 .filter(this::epamJobHistoryEntry)
+                 .mapToInt(JobHistoryEntry::getDuration)
+                 .sum();
 
-        // int result = ???
-        // assertEquals(expected, result);
+         assertEquals(expected, result);
+    }
+
+    private boolean epamJobHistoryEntry(JobHistoryEntry jobHistoryEntry) {
+        return jobHistoryEntry.getEmployer().equals("epam");
     }
 
 }
