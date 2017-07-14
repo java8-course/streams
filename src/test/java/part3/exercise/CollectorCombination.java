@@ -7,6 +7,7 @@ import part2.exercise.CollectorsExercise2.Value;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
@@ -46,7 +47,7 @@ public class CollectorCombination {
         //        .collect(new Collector<Pair, MapPair, MapPair>() {
 
         // Перепишите решение в слещующем виде:
-        final List<CollectorsExercise2.Pair> pairs = CollectorsExercise2.generatePairs(10, 100);
+        final Set<CollectorsExercise2.Pair> pairs = CollectorsExercise2.generatePairs(10, 100);
 
         final Pair<Map<String, Key>, Map<String, List<Value>>> res2 = pairs.stream()
                 .collect(
