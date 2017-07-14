@@ -5,10 +5,8 @@ import data.JobHistoryEntry;
 import data.Person;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static data.Generator.generateEmployeeList;
@@ -22,23 +20,117 @@ public class StreamsExercise2 {
     // https://youtu.be/O8oN4KSZEXE Сергей Куксенко — Stream API, часть 1
     // https://youtu.be/i0Jr2l3jrDA Сергей Куксенко — Stream API, часть 2
 
-    // TODO class PersonEmployerPair
+    private static class PersonEmployerPair {
+        private final Person person;
+        private final String employer;
+
+        public PersonEmployerPair(Person person, String employer) {
+            this.person = person;
+            this.employer = employer;
+
+        }
+
+        public Person getPerson() {
+            return person;
+        }
+
+        public String getEmployer() {
+            return employer;
+        }
+
+    }
+
+    private static class PersonEmployerDuration {
+        private final Person person;
+        private final String employer;
+        private final int duration;
+
+        public PersonEmployerDuration (Person person, String employer, int duration) {
+            this.person = person;
+            this.employer = employer;
+            this.duration = duration;
+        }
+
+        public Person getPerson() {
+            return person;
+        }
+
+        public String getEmployer() {
+            return employer;
+        }
+
+        public int getDuration() {
+            return duration;
+        }
+    }
+
+    private static Stream<PersonEmployerPair> employersToPersons(Employee employee) {
+        return employee.getJobHistory().stream()
+                .map(JobHistoryEntry::getEmployer)
+                .map(person -> new PersonEmployerPair(employee.getPerson(), person));
+    }
 
     @Test
     public void employersStuffLists() {
-        Map<String, List<Person>> employersStuffLists = null;// TODO
-        throw new UnsupportedOperationException();
+        List<Employee> employees = generateEmployeeList();
+
+        final Stream<PersonEmployerPair> personEmployerPairStream = employees.stream()
+                .flatMap(StreamsExercise2::employersToPersons);
+
+        Map<String, List<Person>> var1 =
+                personEmployerPairStream
+                        .collect(Collectors.groupingBy(PersonEmployerPair::getEmployer,
+                                mapping(PersonEmployerPair::getPerson, toList())));
+
+        Map<String, List<Person>> var2  = new HashMap<>();
+
+        for (Employee employee : employees) {
+            for (JobHistoryEntry jobHistoryEntry : employee.getJobHistory()) {
+                if (var2.containsKey(jobHistoryEntry.getEmployer())) {
+                    var2.get(jobHistoryEntry.getPosition()).add(employee.getPerson());
+                } else {
+                    var2.put(jobHistoryEntry.getEmployer(),
+                            new ArrayList<>(Collections.singletonList(employee.getPerson())));
+                }
+            }
+        }
+        assertEquals(var1, var2);
     }
 
     @Test
     public void indexByFirstEmployer() {
-        Map<String, List<Person>> employeesIndex = null;// TODO
-        throw new UnsupportedOperationException();
+        List<Employee> employees = generateEmployeeList();
+
+        Map<String, List<Person>> var1
+                = employees.stream().limit(1)
+                .flatMap(employee -> employee.getJobHistory().stream()
+                        .map(jobHistoryEntry -> new PersonEmployerPair(employee.getPerson(), jobHistoryEntry.getEmployer())))
+                .collect(Collectors.groupingBy(PersonEmployerPair::getEmployer,
+                        mapping((PersonEmployerPair::getPerson), toList())));
+
+
+        Map<String, List<Person>> var2 = new HashMap<>();
+        for (Employee e : employees) {
+            for (JobHistoryEntry j : e.getJobHistory()) {
+                if (var2.containsKey(e.getJobHistory().get(0).getEmployer())) {
+                    var2.get(j.getEmployer()).add(e.getPerson());
+                } else {
+                    var2.put(j.getEmployer(), new ArrayList<>(Collections.singletonList(e.getPerson())));
+                }
+            }
+        }
+
+        assertEquals(var1, var2);
     }
 
     @Test
     public void greatestExperiencePerEmployer() {
-        Map<String, Person> employeesIndex = null;// TODO
+        Map<String, Person> employeesIndex = getEmployees().stream()
+                .flatMap(e -> e.getJobHistory().stream()
+                        .map(j -> new PersonEmployerDuration(e.getPerson(), j.getEmployer(), j.getDuration())))
+                .collect(groupingBy(PersonEmployerDuration::getEmployer,
+                        collectingAndThen(maxBy(Comparator.comparing(PersonEmployerDuration::getDuration)),
+                                p -> p.get().getPerson())));
 
         assertEquals(new Person("John", "White", 28), employeesIndex.get("epam"));
     }
