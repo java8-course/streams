@@ -3,20 +3,11 @@ package part2.exercise;
 import data.Employee;
 import data.JobHistoryEntry;
 import data.Person;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toList;
 
 public class CollectorsExercise1 {
 
@@ -25,6 +16,8 @@ public class CollectorsExercise1 {
         final Map<String, Person> coolestByPosition = getCoolestByPosition(getEmployees());
 
         coolestByPosition.forEach((position, person) -> System.out.println(position + " -> " + person));
+
+        Assert.assertEquals(new Person("John", "White", 28), coolestByPosition.get("BA"));
     }
 
     private static class PersonPositionDuration {
@@ -57,12 +50,16 @@ public class CollectorsExercise1 {
         // Collectors.maxBy
         // Collectors.collectingAndThen
         // Collectors.groupingBy
+        return employees.stream()
+                .flatMap(e -> e.getJobHistory().stream()
+                        .map(j -> new PersonPositionDuration(e.getPerson(), j.getPosition(), j.getDuration())))
+                .collect(Collectors.groupingBy(PersonPositionDuration::getPosition,
+                        Collectors.collectingAndThen(Collectors.maxBy(Comparator.comparingInt(PersonPositionDuration::getDuration)), p -> p.get().getPerson())));
 
         // Second option
         // Collectors.toMap
         // iterate twice: stream...collect(...).stream()...
-        // TODO
-        throw new UnsupportedOperationException();
+        // TODO - done
     }
 
     @Test
@@ -76,6 +73,12 @@ public class CollectorsExercise1 {
     // { John Doe, [{dev, google, 4}, {dev, epam, 4}] } предпочтительнее, чем { A B, [{dev, google, 6}, {QA, epam, 100}]}
     private Map<String, Person> getCoolestByPosition2(List<Employee> employees) {
         // TODO
+//        employees.stream()
+//                .flatMap(e->e.getJobHistory().stream()
+//                .map(j->new PersonPositionDuration(e.getPerson(), j.getPosition(), j.getDuration())))
+//                .collect(Collectors.groupingBy(PersonPositionDuration::getPosition,
+//                        Collectors.collectingAndThen(Collectors.summarizingInt(PersonPositionDuration::getDuration),
+
         throw new UnsupportedOperationException();
     }
 
