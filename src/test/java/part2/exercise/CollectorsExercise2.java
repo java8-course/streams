@@ -1,8 +1,5 @@
 package part2.exercise;
 
-import data.Employee;
-import data.JobHistoryEntry;
-import data.Person;
 import org.junit.Test;
 
 import java.util.*;
@@ -16,7 +13,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
+import static org.junit.Assert.assertEquals;
 
 public class CollectorsExercise2 {
 
@@ -109,13 +107,22 @@ public class CollectorsExercise2 {
 
     private static class SubResult {
         private final Map<Key, List<Value>> subResult;
-        private final Map<String, List<Key>> knownKeys;
+        private final Map<String, Key> knownKeys;
         private final Map<String, List<Value>> valuesWithoutKeys;
 
-        public SubResult(Map<Key, List<Value>> subResult, Map<String, List<Key>> knownKeys, Map<String, List<Value>> valuesWithoutKeys) {
+        public SubResult(Map<Key, List<Value>> subResult, Map<String, Key> knownKeys, Map<String,
+                List<Value>> valuesWithoutKeys) {
             this.subResult = subResult;
             this.knownKeys = knownKeys;
             this.valuesWithoutKeys = valuesWithoutKeys;
+        }
+
+        public SubResult(Map<String, Key> knownKeys, Map<String, List<Value>> valuesWithoutKeys) {
+            this(new HashMap<>(), knownKeys, valuesWithoutKeys);
+        }
+
+        public SubResult() {
+            this(new HashMap<>(), new HashMap<>(), new HashMap<>());
         }
 
         public Map<Key, List<Value>> getSubResult() {
@@ -126,7 +133,7 @@ public class CollectorsExercise2 {
             return valuesWithoutKeys;
         }
 
-        public Map<String, List<Key>> getKnownKeys() {
+        public Map<String, Key> getKnownKeys() {
             return knownKeys;
         }
     }
@@ -174,26 +181,69 @@ public class CollectorsExercise2 {
 
         // В каждом Map.Entry id ключа должно совпадать с keyId для каждого значения в списке
         // final Map<Key, List<Value>> keyValuesMap1 = valueMap1.entrySet().stream()...
+        final Map<String, Key> keyMap1 =
+                pairs.stream()
+                        .collect(
+                                toMap(
+                                        o -> o.getKey().getId(),
+                                        t -> t.getKey(),
+                                        (u, u2) -> u
+                                )
+                        );
+
+        final Map<String, List<Value>> valuesMap1 =
+                pairs.stream()
+                        .collect(
+                                groupingBy(
+                                        o -> o.getValue().getKeyId(),
+                                        mapping(o -> o.getValue(), toList())
+                                )
+                        );
+
+        Map<Key, List<Value>> firstResult = valuesMap1.entrySet()
+                .stream()
+                .collect(
+                        toMap(
+                                o -> keyMap1.get(o.getKey()),
+                                o -> o.getValue()
+                        )
+                );
 
         // В 1 проход в 2 Map с использованием MapPair и mapMerger
         final MapPair res2 = pairs.stream()
                 .collect(new Collector<Pair, MapPair, MapPair>() {
                     @Override
                     public Supplier<MapPair> supplier() {
-                        // TODO
-                        throw new UnsupportedOperationException();
+                        return MapPair::new;
                     }
 
                     @Override
                     public BiConsumer<MapPair, Pair> accumulator() {
-                        // TODO add key and value to maps
-                        throw new UnsupportedOperationException();
+                        return (mapPair, pair) -> {
+                            mapPair.getKeyById().putIfAbsent(pair.getKey().getId(), pair.getKey());
+                            mapPair.getValueById().computeIfAbsent(pair.getValue().getKeyId(),
+                                    s -> new ArrayList<>()).add(pair.getValue());
+                        };
                     }
 
                     @Override
                     public BinaryOperator<MapPair> combiner() {
-                        // TODO use mapMerger
-                        throw new UnsupportedOperationException();
+                        return (mapPair1, mapPair2) -> {
+                            BinaryOperator<Map<String, Key>> keyBinaryOperator = mapMerger((o, o2) -> o);
+                            Map<String, Key> mapKeys =
+                                    keyBinaryOperator.apply(mapPair1.getKeyById(), mapPair2.getKeyById());
+
+                            BinaryOperator<Map<String, List<Value>>> valueBinaryOperator =
+                                    mapMerger(
+                                            (list1, list2) -> {
+                                                list1.addAll(list2);
+                                                return list1;
+                                            });
+                            Map<String, List<Value>> mapValues =
+                                    valueBinaryOperator.apply(mapPair1.getValueById(), mapPair2.getValueById());
+
+                            return new MapPair(mapKeys, mapValues);
+                        };
                     }
 
                     @Override
@@ -205,41 +255,78 @@ public class CollectorsExercise2 {
                     public Set<Characteristics> characteristics() {
                         return Collections.unmodifiableSet(EnumSet.of(
                                 Characteristics.UNORDERED,
-                                Characteristics.IDENTITY_FINISH));
+                                Collector.Characteristics.IDENTITY_FINISH));
                     }
                 });
 
         final Map<String, Key> keyMap2 = res2.getKeyById();
         final Map<String, List<Value>> valuesMap2 = res2.getValueById();
 
-        // final Map<Key, List<Value>> keyValuesMap2 = valueMap2.entrySet().stream()...
+//         final Map<Key, List<Value>> keyValuesMap2 = valueMap2.entrySet().stream()...
+        final Map<Key, List<Value>> secondResult =
+                valuesMap2.entrySet().stream()
+                        .collect(
+                                toMap(
+                                        o -> keyMap2.get(o.getKey()),
+                                        o -> o.getValue()
+                                )
+                        );
 
         // Получение результата сразу:
-
         final SubResult res3 = pairs.stream()
                 .collect(new Collector<Pair, SubResult, SubResult>() {
                     @Override
                     public Supplier<SubResult> supplier() {
-                        // TODO
-                        throw new UnsupportedOperationException();
+                        return SubResult::new;
                     }
 
                     @Override
                     public BiConsumer<SubResult, Pair> accumulator() {
-                        // TODO add key to map, then check value.keyId and add it to one of maps
-                        throw new UnsupportedOperationException();
+                        return (subResult, pair) -> {
+                            subResult.getKnownKeys().putIfAbsent(pair.getKey().getId(), pair.getKey());
+                            subResult.getValuesWithoutKeys().computeIfAbsent(pair.getValue().getKeyId(),
+                                    s -> new ArrayList<>()).add(pair.getValue());
+
+                        };
                     }
 
                     @Override
                     public BinaryOperator<SubResult> combiner() {
-                        // TODO use mapMerger, then check all valuesWithoutKeys
-                        throw new UnsupportedOperationException();
+                        return (subResult1, subResult2) -> {
+                            BinaryOperator<Map<String, Key>> keyBinaryOperator = mapMerger((o, o2) -> o);
+                            Map<String, Key> mapKeys =
+                                    keyBinaryOperator.apply(subResult1.getKnownKeys(), subResult2.getKnownKeys());
+
+                            BinaryOperator<Map<String, List<Value>>> valueBinaryOperator =
+                                    mapMerger(
+                                            (list1, list2) -> {
+                                                list1.addAll(list2);
+                                                return list1;
+                                            });
+                            Map<String, List<Value>> mapValues =
+                                    valueBinaryOperator.apply(
+                                            subResult1.getValuesWithoutKeys(),
+                                            subResult2.getValuesWithoutKeys()
+                                    );
+
+                            return new SubResult(mapKeys, mapValues);
+                        };
                     }
 
                     @Override
                     public Function<SubResult, SubResult> finisher() {
-                        // TODO use mapMerger, then check all valuesWithoutKeys
-                        throw new UnsupportedOperationException();
+                        return subResult -> {
+                            Map<Key, List<Value>> collect = subResult.getValuesWithoutKeys().entrySet()
+                                    .stream()
+                                    .collect(
+                                            toMap(
+                                                    t -> subResult.getKnownKeys().get(t.getKey()),
+                                                    o -> o.getValue()
+                                            )
+                                    );
+
+                            return new SubResult(collect, subResult.knownKeys, subResult.getValuesWithoutKeys());
+                        };
                     }
 
                     @Override
@@ -249,9 +336,26 @@ public class CollectorsExercise2 {
                     }
                 });
 
-        final Map<Key, List<Value>> keyValuesMap3 = res3.getSubResult();
+        final Map<Key, List<Value>> thirdResult = res3.getSubResult();
 
         // compare results
+        firstResult.forEach((key, values) -> {
+            List<Value> secondValues = secondResult.get(key);
+            assertEquals(values.size(), secondValues.size());
+            assertEquals(key.getId(), values.get(0).getKeyId());
+        });
+
+        secondResult.forEach((key, values) -> {
+            List<Value> thirdValues = thirdResult.get(key);
+            assertEquals(values.size(), thirdValues.size());
+            assertEquals(key.getId(), values.get(0).getKeyId());
+        });
+
+        thirdResult.forEach((key, values) -> {
+            List<Value> firstValues = firstResult.get(key);
+            assertEquals(values.size(), firstValues.size());
+            assertEquals(key.getId(), values.get(0).getKeyId());
+        });
     }
 
 }
