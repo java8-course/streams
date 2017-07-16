@@ -96,7 +96,7 @@ public class StreamsExercise1 {
         assertEquals(expected, result);
     }
 
-    private static class PersonEmployerDuration {
+    static class PersonEmployerDuration {
         private final Person person;
         private final String employer;
         private final int duration;
