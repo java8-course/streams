@@ -5,10 +5,7 @@ import part2.exercise.CollectorsExercise2;
 import part2.exercise.CollectorsExercise2.Key;
 import part2.exercise.CollectorsExercise2.Value;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -95,27 +92,43 @@ public class CollectorCombination {
                 .collect(new Collector<CollectorsExercise2.Pair, CollectorsExercise2.MapPair, CollectorsExercise2.MapPair>() {
                     @Override
                     public Supplier<CollectorsExercise2.MapPair> supplier() {
-                        return null;
+                        // TODO
+                        return CollectorsExercise2.MapPair::new;
                     }
 
                     @Override
                     public BiConsumer<CollectorsExercise2.MapPair, CollectorsExercise2.Pair> accumulator() {
+                        // TODO add key and value to maps
+//                        return CollectorsExercise2.MapPair::put;
                         return null;
                     }
 
                     @Override
                     public BinaryOperator<CollectorsExercise2.MapPair> combiner() {
-                        return null;
+                        // TODO use mapMerger
+                        return (mapPair, mapPair2) -> {
+                            BinaryOperator<Map<String, Key>> keyMerger = CollectorsExercise2.mapMerger((v1, v2) -> v1);
+                            keyMerger.apply(mapPair.getKeyById(), mapPair2.getKeyById());
+                            BinaryOperator<Map<String, List<Value>>> valueMerger =
+                                    CollectorsExercise2.mapMerger((v1, v2) -> {
+                                        v1.addAll(v2);
+                                        return v1;
+                                    });
+                            valueMerger.apply(mapPair.getValueById(), mapPair2.getValueById());
+                            return mapPair;
+                        };
                     }
 
                     @Override
                     public Function<CollectorsExercise2.MapPair, CollectorsExercise2.MapPair> finisher() {
-                        return null;
+                        return Function.identity();
                     }
 
                     @Override
                     public Set<Characteristics> characteristics() {
-                        return null;
+                        return Collections.unmodifiableSet(EnumSet.of(
+                                Characteristics.UNORDERED,
+                                Characteristics.IDENTITY_FINISH));
                     }
                 });
 

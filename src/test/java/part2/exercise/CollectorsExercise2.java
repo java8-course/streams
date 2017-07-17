@@ -153,7 +153,7 @@ public class CollectorsExercise2 {
         }
     }
 
-    private static <K, V, M extends Map<K, V>>
+    public static <K, V, M extends Map<K, V>>
     BinaryOperator<M> mapMerger(BinaryOperator<V> mergeFunction) {
         return (m1, m2) -> {
             for (Map.Entry<K, V> e : m2.entrySet()) {
