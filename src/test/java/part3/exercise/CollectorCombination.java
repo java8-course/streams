@@ -5,12 +5,18 @@ import part2.exercise.CollectorsExercise2;
 import part2.exercise.CollectorsExercise2.Key;
 import part2.exercise.CollectorsExercise2.Value;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 import static java.util.stream.Collectors.*;
+import static org.junit.Assert.assertEquals;
 
 public class CollectorCombination {
 
@@ -30,23 +36,88 @@ public class CollectorCombination {
         public B getB() {
             return b;
         }
+
+        @Override
+        public String toString() {
+            return String.format("Pair<%s & %s>", a, b);
+        }
     }
 
     private static <T, M1, M2, R1, R2> Collector<T, Pair<M1, M2>, Pair<R1, R2>> paired(Collector<T, M1, R1> c1,
                                                                                        Collector<T, M2, R2> c2) {
         // TODO
-        throw new UnsupportedOperationException();
+        return new Collector<T, Pair<M1, M2>, Pair<R1, R2>>() {
+            @Override
+            public Supplier<Pair<M1, M2>> supplier() {
+                return () -> new Pair<>(c1.supplier().get(), c2.supplier().get());
+            }
+
+            @Override
+            public BiConsumer<Pair<M1, M2>, T> accumulator() {
+                return (pair, t) -> {
+                    c1.accumulator().accept(pair.getA(), t);
+                    c2.accumulator().accept(pair.getB(), t);
+                };
+            }
+
+            @Override
+            public BinaryOperator<Pair<M1, M2>> combiner() {
+                return (p1, p2) -> new Pair<> (
+                    c1.combiner().apply(p1.getA(), p2.getA()),
+                    c2.combiner().apply(p1.getB(), p2.getB()));
+            }
+
+            @Override
+            public Function<Pair<M1, M2>, Pair<R1, R2>> finisher() {
+                return p -> new Pair<> (
+                    c1.finisher().apply(p.getA()),
+                    c2.finisher().apply(p.getB()));
+            }
+
+            @Override
+            public Set<Characteristics> characteristics() {
+                Set<Characteristics> set = new HashSet<>();
+                set.addAll(c1.characteristics());
+                set.addAll(c2.characteristics());
+                return set;
+            }
+        };
     }
 
     @Test
     public void collectKeyValueMap() {
-        // TODO see CollectorsExercise1::collectKeyValueMap
-        // В 1 проход в 2 Map с использованием MapPair и mapMerger
-        // final MapPair res2 = pairs.stream()
-        //        .collect(new Collector<Pair, MapPair, MapPair>() {
-
         // Перепишите решение в слещующем виде:
         final List<CollectorsExercise2.Pair> pairs = CollectorsExercise2.generatePairs(10, 100);
+
+        // TODO see CollectorsExercise1::collectKeyValueMap
+        // В 1 проход в 2 Map с использованием MapPair и mapMerger
+         final CollectorsExercise2.MapPair res1 = pairs.stream()
+                .collect(new Collector<CollectorsExercise2.Pair, CollectorsExercise2.MapPair, CollectorsExercise2.MapPair>() {
+                    @Override
+                    public Supplier<CollectorsExercise2.MapPair> supplier() {
+                        return null;
+                    }
+
+                    @Override
+                    public BiConsumer<CollectorsExercise2.MapPair, CollectorsExercise2.Pair> accumulator() {
+                        return null;
+                    }
+
+                    @Override
+                    public BinaryOperator<CollectorsExercise2.MapPair> combiner() {
+                        return null;
+                    }
+
+                    @Override
+                    public Function<CollectorsExercise2.MapPair, CollectorsExercise2.MapPair> finisher() {
+                        return null;
+                    }
+
+                    @Override
+                    public Set<Characteristics> characteristics() {
+                        return null;
+                    }
+                });
 
         final Pair<Map<String, Key>, Map<String, List<Value>>> res2 = pairs.stream()
                 .collect(
@@ -56,9 +127,7 @@ public class CollectorCombination {
                         )
                 );
 
-
         // TODO tests
-        throw new UnsupportedOperationException();
+        assertEquals(1, res2);
     }
-
 }
