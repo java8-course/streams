@@ -204,7 +204,6 @@ public class CollectorsExercise2 {
                                 Map.Entry::getValue
                         )
                 );
-
         final MapPair res2 = pairs.stream()
                 .collect(new Collector<Pair, MapPair, MapPair>() {
                     @Override
@@ -224,10 +223,10 @@ public class CollectorsExercise2 {
 
                     @Override
                     public BinaryOperator<MapPair> combiner() {
-                        return (mp1, mp2) -> {
-                            BinaryOperator<Map<String, Key>> binaryOperator = mapMerger((v1, v2) -> v1);
-                            Map<String, Key> map = binaryOperator.apply(mp1.getKeyById(), mp2.getKeyById());
-                            BinaryOperator<Map<String, List<Value>>> mapBinaryOperator = mapMerger((v1, v2) -> {
+                        return (mp1,mp2) -> {
+                            BinaryOperator<Map<String, Key>> binaryOperator = mapMerger((v1,v2) -> v1);
+                            Map<String,Key> map = binaryOperator.apply(mp1.getKeyById(), mp2.getKeyById());
+                            BinaryOperator<Map<String, List<Value>>> mapBinaryOperator = mapMerger((v1,v2) -> {
                                 v1.addAll(v2);
                                 return v1;
                             });
