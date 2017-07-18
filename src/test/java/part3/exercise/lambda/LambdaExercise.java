@@ -13,23 +13,28 @@ public class LambdaExercise {
 
     @Test
     public void supply() {
+
+        //Who is John Galt? :)
         final Person person = new Person("John", "Galt", 30);
 
-        final Supplier<Person> getPerson = null; // TODO return person from Supplier
+        final Supplier<Person> getPerson = () -> person;
 
         assertEquals(person, getPerson.get());
     }
 
     @Test
     public void function() {
-        final Function<Person, String> getPersonName1 = null; // TODO get the name of person using expression lambda
-
-        final Function<Person, String> getPersonName2 = null; // TODO get the name of person using method reference
-
-        // TODO get the name of person and log it to System.out using statement lambda: {}
-        final Function<Person, String> getPersonNameAndLogIt = null;
-
         final Person person = new Person("John", "Galt", 30);
+
+        final Function<Person, String> getPersonName1 = p -> p.getFirstName();
+
+        final Function<Person, String> getPersonName2 = Person::getFirstName;
+
+        final Function<Person, String> getPersonNameAndLogIt = p -> {
+            final String name = p.getFirstName();
+            System.out.println(name);
+            return name;
+        };
 
         assertEquals(person.getFirstName(), getPersonName1.apply(person));
         assertEquals(person.getFirstName(), getPersonName2.apply(person));
@@ -38,21 +43,20 @@ public class LambdaExercise {
 
     @Test
     public void combineFunctions() {
-        final Function<Person, String> getPersonName = null; // TODO get the name of person
+        final Person person = new Person("John", "Galt", 30);
+
+        final Function<Person, String> getPersonName = Person::getFirstName;
 
         assertEquals("John", getPersonName.apply(new Person("John", "Galt", 30)));
 
-        final Function<String, Integer> getStringLength = null; // TODO get string length
+        final Function<String, Integer> getStringLength = String::length;
 
         assertEquals(Integer.valueOf(3), getStringLength.apply("ABC"));
 
-        // TODO get person name length using getPersonName and getStringLength without andThen
-        final Function<Person, Integer> getPersonNameLength1 = null;
+        final Function<Person, Integer> getPersonNameLength1 = p -> getStringLength.apply(getPersonName.apply(p));
 
-        // TODO get person name length using getPersonName and getStringLength with andThen
-        final Function<Person, Integer> getPersonNameLength2 = null;
+        final Function<Person, Integer> getPersonNameLength2 = getPersonName.andThen(getStringLength);
 
-        final Person person = new Person("John", "Galt", 30);
 
         assertEquals(Integer.valueOf(4), getPersonNameLength1.apply(person));
         assertEquals(Integer.valueOf(4), getPersonNameLength2.apply(person));
@@ -68,26 +72,29 @@ public class LambdaExercise {
 
     // ((T -> R), (R -> boolean)) -> (T -> boolean)
     private <T, R> Predicate<T> combine(Function<T, R> f, Predicate<R> p) {
-        // TODO
-        throw new UnsupportedOperationException();
+        return v -> p.test(f.apply(v));
     }
 
     @Test
     public void methodReference() {
-        // TODO use only method reverences here.
-        final Person person = createPerson(null); // TODO
+
+        final Person person = createPerson(Person::new);
 
         assertEquals(new Person("John", "Galt", 66), person);
 
-        final Function<Person, String> getPersonName = null; // TODO
+        final Function<Person, String> getPersonName = Person::getFirstName;
 
         assertEquals("John", getPersonName.apply(person));
 
-        final Predicate<String> isJohnString = null; // TODO using method reference check that "John" equals string parameter
+        final Predicate<String> isJohnString = LambdaExercise::isJohn;
 
         final Predicate<Person> isJohnPerson = combine(getPersonName, isJohnString);
 
         assertEquals(true, isJohnPerson.test(person));
+    }
+
+    private static boolean isJohn(String name){
+        return name.equals("John");
     }
 
 }
