@@ -83,64 +83,82 @@ public class CollectorCombination {
 
     @Test
     public void collectKeyValueMap() {
-        // Перепишите решение в слещующем виде:
         final List<CollectorsExercise2.Pair> pairs = CollectorsExercise2.generatePairs(10, 100);
 
         // TODO see CollectorsExercise1::collectKeyValueMap
         // В 1 проход в 2 Map с использованием MapPair и mapMerger
-         final CollectorsExercise2.MapPair res1 = pairs.stream()
-                .collect(new Collector<CollectorsExercise2.Pair, CollectorsExercise2.MapPair, CollectorsExercise2.MapPair>() {
-                    @Override
-                    public Supplier<CollectorsExercise2.MapPair> supplier() {
-                        // TODO
-                        return CollectorsExercise2.MapPair::new;
-                    }
+         final Map<Key, List<Value>> res1 = pairs.stream()
+                .collect(collectingAndThen(
+                                new Collector<CollectorsExercise2.Pair, CollectorsExercise2.MapPair, CollectorsExercise2.MapPair>() {
+                            @Override
+                            public Supplier<CollectorsExercise2.MapPair> supplier() {
+                                // TODO
+                                return CollectorsExercise2.MapPair::new;
+                            }
 
-                    @Override
-                    public BiConsumer<CollectorsExercise2.MapPair, CollectorsExercise2.Pair> accumulator() {
-                        // TODO add key and value to maps
-//                        return CollectorsExercise2.MapPair::put;
-                        return null;
-                    }
+                            @Override
+                            public BiConsumer<CollectorsExercise2.MapPair, CollectorsExercise2.Pair> accumulator() {
+                                // TODO
+                                return CollectorsExercise2.MapPair::put;
+                            }
 
-                    @Override
-                    public BinaryOperator<CollectorsExercise2.MapPair> combiner() {
-                        // TODO use mapMerger
-                        return (mapPair, mapPair2) -> {
-                            BinaryOperator<Map<String, Key>> keyMerger = CollectorsExercise2.mapMerger((v1, v2) -> v1);
-                            keyMerger.apply(mapPair.getKeyById(), mapPair2.getKeyById());
-                            BinaryOperator<Map<String, List<Value>>> valueMerger =
-                                    CollectorsExercise2.mapMerger((v1, v2) -> {
-                                        v1.addAll(v2);
-                                        return v1;
-                                    });
-                            valueMerger.apply(mapPair.getValueById(), mapPair2.getValueById());
-                            return mapPair;
-                        };
-                    }
+                            @Override
+                            public BinaryOperator<CollectorsExercise2.MapPair> combiner() {
+                                // TODO
+                                return (mapPair, mapPair2) -> {
+                                    BinaryOperator<Map<String, Key>> keyMerger = CollectorsExercise2.mapMerger((v1, v2) -> v1);
+                                    keyMerger.apply(mapPair.getKeyById(), mapPair2.getKeyById());
+                                    BinaryOperator<Map<String, List<Value>>> valueMerger =
+                                            CollectorsExercise2.mapMerger((v1, v2) -> {
+                                                v1.addAll(v2);
+                                                return v1;
+                                            });
+                                    valueMerger.apply(mapPair.getValueById(), mapPair2.getValueById());
+                                    return mapPair;
+                                };
+                            }
 
-                    @Override
-                    public Function<CollectorsExercise2.MapPair, CollectorsExercise2.MapPair> finisher() {
-                        return Function.identity();
-                    }
+                            @Override
+                            public Function<CollectorsExercise2.MapPair, CollectorsExercise2.MapPair> finisher() {
+                                return Function.identity();
+                            }
 
-                    @Override
-                    public Set<Characteristics> characteristics() {
-                        return Collections.unmodifiableSet(EnumSet.of(
-                                Characteristics.UNORDERED,
-                                Characteristics.IDENTITY_FINISH));
-                    }
-                });
+                            @Override
+                            public Set<Characteristics> characteristics() {
+                                return Collections.unmodifiableSet(EnumSet.of(
+                                        Characteristics.UNORDERED,
+                                        Characteristics.IDENTITY_FINISH));
+                            }
+                        },
+                        (CollectorsExercise2.MapPair mmp) -> mmp.getKeyById().entrySet().stream()
+                                .map(kp -> new AbstractMap.SimpleEntry<>(kp.getValue(), mmp.getValueById().get(kp.getKey())))
+                                .collect(toMap(
+                                        Map.Entry::getKey,
+                                        Map.Entry::getValue
+                                ))
+                    )
+                );
 
-        final Pair<Map<String, Key>, Map<String, List<Value>>> res2 = pairs.stream()
+        // Перепишите решение в слещующем виде:
+        final Map<Key, List<Value>> res2 = pairs.stream()
                 .collect(
-                        paired(
-                                mapping(CollectorsExercise2.Pair::getKey, toMap(Key::getId, Function.identity(), (x, y) -> x)),
-                                mapping(CollectorsExercise2.Pair::getValue, groupingBy(Value::getKeyId))
+                        collectingAndThen(
+                                paired(
+                                        mapping(CollectorsExercise2.Pair::getKey,
+                                                toMap(Key::getId, Function.identity(), (x, y) -> x)),
+                                        mapping(CollectorsExercise2.Pair::getValue,
+                                                groupingBy(Value::getKeyId))
+                                ),
+                                mmp -> mmp.getA().entrySet().stream()
+                                            .map(kp -> new AbstractMap.SimpleEntry<>(kp.getValue(), mmp.getB().get(kp.getKey())))
+                                            .collect(toMap(
+                                                    Map.Entry::getKey,
+                                                    Map.Entry::getValue
+                                            ))
                         )
                 );
 
         // TODO tests
-        assertEquals(1, res2);
+        assertEquals(res1, res2);
     }
 }

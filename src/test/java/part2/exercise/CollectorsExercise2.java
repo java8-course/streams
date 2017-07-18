@@ -139,7 +139,7 @@ public class CollectorsExercise2 {
             this(new HashMap<>(), new HashMap<>());
         }
 
-        public MapPair(Map<String, Key> keyById, Map<String, List<Value>> valueById) {
+        MapPair(Map<String, Key> keyById, Map<String, List<Value>> valueById) {
             this.keyById = keyById;
             this.valueById = valueById;
         }
@@ -150,6 +150,18 @@ public class CollectorsExercise2 {
 
         public Map<String, List<Value>> getValueById() {
             return valueById;
+        }
+
+        public void put(Pair p) {
+            keyById.put(p.getKey().getId(), p.getKey());
+            final ArrayList<Value> value = new ArrayList<>();
+            value.add(p.getValue());
+            valueById.merge(p.getValue().getKeyId(),
+                    value,
+                    (l1, l2) -> {
+                        l1.addAll(l2);
+                        return l1;
+                    });
         }
     }
 
