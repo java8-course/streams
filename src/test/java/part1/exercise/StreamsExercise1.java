@@ -10,6 +10,7 @@ import static data.Generator.generateEmployeeList;
 import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class StreamsExercise1 {
     // https://youtu.be/kxgo7Y4cdA8 Сергей Куксенко и Алексей Шипилёв — Через тернии к лямбдам, часть 1
@@ -24,9 +25,11 @@ public class StreamsExercise1 {
         // TODO all persons with experience in epam
 
 
-        assertFalse(epamEmployees.toString().contains("employer=google"));
-        assertFalse(epamEmployees.toString().contains("employer=yandex"));
-        assertFalse(epamEmployees.toString().contains("employer=abc"));
+        epamEmployees.forEach(e -> assertTrue(
+                        "employee doesn't have experience in Epam",
+                        e.toString().contains("employer=epam")
+                        )
+                );
     }
 
     @Test
