@@ -1,9 +1,11 @@
 package part1.exercise;
 
 import data.Employee;
+import data.Generator;
 import data.JobHistoryEntry;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static data.Generator.generateEmployeeList;
@@ -21,28 +23,51 @@ public class StreamsExercise1 {
 
     @Test
     public void getAllEpamEmployees() {
+        List<Employee> allEmployee = Generator.generateEmployeeListWithEpamExperience();
+
+        final List<Employee> expected = new ArrayList<>();
+
+        for (Employee employee : allEmployee) {
+            final List<JobHistoryEntry> jobHistory = employee.getJobHistory();
+            boolean isEpamEmployee = false;
+            for (JobHistoryEntry jobHistoryEntry : jobHistory) {
+                if("epam".equals(jobHistoryEntry.getEmployer())) {
+                    isEpamEmployee = true;
+                }
+            }
+            if (isEpamEmployee) {
+                expected.add(employee);
+            }
+        }
+
         List<Employee> epamEmployees = null;
         // TODO all persons with experience in epam
 
 
-        epamEmployees.forEach(e -> assertTrue(
-                        "employee doesn't have experience in Epam",
-                        e.toString().contains("employer=epam")
-                        )
-                );
+        assertTrue("Expected size" + expected.size(), expected.size() == epamEmployees.size());
+        assertTrue("Wrong result", expected.containsAll(epamEmployees));
     }
 
     @Test
     public void getEmployeesStartedFromEpam() {
+        List<Employee> allEmployee = Generator.generateEmployeeListWithEpamExperience();
+
+        final List<Employee> expected = new ArrayList<>();
+
+        for (Employee employee : allEmployee) {
+            if("epam".equals(employee.getJobHistory().iterator().next().getEmployer())) {
+                expected.add(employee);
+            }
+        }
+
         List<Employee> epamEmployees = null;
         // TODO all persons with first experience in epam
 
         assertNotNull(epamEmployees);
         assertFalse(epamEmployees.isEmpty());
 
-        for (Employee epamEmployee : epamEmployees) {
-            assertEquals("epam", epamEmployee.getJobHistory().get(0).getEmployer());
-        }
+        assertTrue("Expected size" + expected.size(), expected.size() == epamEmployees.size());
+        assertTrue("Wrong result", expected.containsAll(epamEmployees));
     }
 
     @Test
