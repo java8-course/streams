@@ -1,5 +1,6 @@
 package data;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -62,5 +63,33 @@ public class Generator {
     public static List<Employee> generateEmployeeList() {
         // TODO
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * That method guarantees that returnable employees list contains
+     * at least one employee with first and only experience at Epam.
+     *
+     * @return list of employee
+     */
+    public static List<Employee> generateEmployeeListWithEpamExperience() {
+        final List<Employee> employees = generateEmployeeList();
+
+        final Employee employeeWithFistEpamExperience = new Employee(
+                new Person(
+                        "Maria", "Cybershooter", 28
+                ),
+                Arrays.asList(
+                        new JobHistoryEntry(
+                                2, "dev", "epam"
+                        ),
+                        new JobHistoryEntry(
+                                3, "QA", "epam"
+                        )
+                )
+        );
+
+        employees.add(employeeWithFistEpamExperience);
+
+        return employees;
     }
 }
